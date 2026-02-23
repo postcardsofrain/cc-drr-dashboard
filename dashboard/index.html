@@ -1,1 +1,1015 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conscious Chemist — DRR Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg:#08090c; --surface:#0f1117; --surface2:#161923; --border:#1e2235;
+  --accent:#c8f35a; --accent2:#5ac8f3; --accent3:#f35a7a; --accent4:#a78bfa;
+  --accent5:#f3a85a; --text:#dde2f0; --muted:#4a5070; --success:#4ade80;
+  --font-head:'Syne',sans-serif; --font-mono:'DM Mono',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh;overflow-x:hidden;font-size:13px}
 
+/* ── HEADER ── */
+.header{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200}
+.logo{font-family:var(--font-head);font-weight:800;font-size:1rem;letter-spacing:-.02em}
+.logo em{color:var(--accent);font-style:normal}
+.status{display:flex;align-items:center;gap:8px;font-size:.68rem;color:var(--muted)}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--success);animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── FILTER BAR ── */
+.filters{display:flex;align-items:center;gap:10px;padding:10px 28px;background:var(--surface);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.fg{display:flex;align-items:center;gap:6px}
+.fl{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;white-space:nowrap}
+select,input[type=date]{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.72rem;padding:5px 10px;border-radius:4px;cursor:pointer;outline:none;transition:border-color .15s}
+select:hover,input[type=date]:hover,select:focus,input[type=date]:focus{border-color:var(--accent)}
+.reset{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-mono);font-size:.68rem;padding:5px 12px;border-radius:4px;cursor:pointer;transition:all .15s}
+.reset:hover{border-color:var(--accent3);color:var(--accent3)}
+#rowCount{font-size:.62rem;color:var(--muted);margin-left:auto}
+
+/* ── TABS ── */
+.tabs{display:flex;padding:0 28px;background:var(--surface);border-bottom:1px solid var(--border);overflow-x:auto;gap:0}
+.tab{background:none;border:none;color:var(--muted);font-family:var(--font-head);font-size:.78rem;font-weight:600;padding:13px 20px;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;letter-spacing:.01em}
+.tab:hover{color:var(--text)}
+.tab.on{color:var(--accent);border-bottom-color:var(--accent)}
+
+/* ── CONTENT ── */
+.pane{display:none;padding:24px 28px;animation:fadeIn .2s ease}
+.pane.on{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── KPI CARDS ── */
+.kgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:24px}
+.kcard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:18px 20px;position:relative;overflow:hidden;transition:border-color .15s}
+.kcard:hover{border-color:var(--accent)}
+.kcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kcard:nth-child(1)::before{background:var(--accent)}
+.kcard:nth-child(2)::before{background:var(--accent2)}
+.kcard:nth-child(3)::before{background:var(--accent4)}
+.kcard:nth-child(4)::before{background:var(--accent3)}
+.kcard:nth-child(5)::before{background:var(--accent5)}
+.klabel{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:8px}
+.kval{font-family:var(--font-head);font-size:1.9rem;font-weight:800;line-height:1}
+.ksub{font-size:.65rem;color:var(--muted);margin-top:5px}
+.kdelta{font-size:.65rem;margin-top:3px}
+.kdelta.up{color:var(--success)}.kdelta.dn{color:var(--accent3)}
+
+/* ── SECTION TITLE ── */
+.stitle{font-family:var(--font-head);font-size:1rem;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:10px}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── TABLE ── */
+.twrap{overflow-x:auto;border:1px solid var(--border);border-radius:8px;margin-bottom:24px}
+table{width:100%;border-collapse:collapse;font-size:.72rem}
+thead tr{background:var(--surface2)}
+th{padding:10px 14px;text-align:left;color:var(--muted);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;font-weight:500;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--accent)}
+td{padding:10px 14px;border-bottom:1px solid var(--border)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.badge{display:inline-block;padding:2px 7px;border-radius:3px;font-size:.62rem}
+.bar-cell{display:flex;align-items:center;gap:6px}
+.mini-bar{width:50px;height:3px;background:var(--border);border-radius:2px;flex-shrink:0}
+.mini-bar-fill{height:100%;border-radius:2px;background:var(--accent)}
+
+/* ── CHARTS ── */
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:20px}
+.cgrid.t3{grid-template-columns:1fr 1fr 1fr}
+.ccard{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:20px}
+.ccard.full{grid-column:1/-1}
+.ctitle{font-family:var(--font-head);font-size:.82rem;font-weight:700;margin-bottom:14px;display:flex;align-items:baseline;gap:8px}
+.ctitle span{font-family:var(--font-mono);font-size:.65rem;color:var(--muted);font-weight:400}
+.cwrap{position:relative;height:240px}
+.cwrap.tall{height:320px}
+.cwrap.short{height:180px}
+
+/* ── HEATMAP ── */
+.hm-wrap{overflow-x:auto}
+.hm-table{border-collapse:collapse;font-size:.6rem;white-space:nowrap}
+.hm-table th{padding:5px 8px;color:var(--muted);font-weight:400;text-align:center;position:sticky;top:0;background:var(--surface)}
+.hm-table th.sku-h{text-align:left;min-width:120px;position:sticky;left:0;background:var(--surface);z-index:10}
+.hm-table td{width:30px;height:26px;text-align:center;font-size:.55rem;cursor:default;border:1px solid var(--bg);position:relative}
+.hm-table td.sku-l{text-align:left;padding:0 10px;color:var(--text);font-size:.65rem;position:sticky;left:0;background:var(--surface2);z-index:5;min-width:120px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px}
+.hm-month-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.pill{padding:4px 12px;border-radius:20px;border:1px solid var(--border);font-size:.68rem;cursor:pointer;transition:all .15s;background:var(--surface)}
+.pill:hover{border-color:var(--accent2)}
+.pill.on{background:var(--accent2);border-color:var(--accent2);color:#000;font-weight:600}
+.hm-legend{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:.62rem;color:var(--muted)}
+.legend-swatches{display:flex;gap:2px}
+.lsw{width:18px;height:8px;border-radius:1px}
+
+/* ── DRILL DOWN ── */
+.drill-selector{display:flex;align-items:stretch;gap:12px;margin-bottom:24px;flex-wrap:wrap}
+.drill-search-box{flex:1;min-width:260px;position:relative}
+.drill-search-box input{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.8rem;padding:10px 14px 10px 36px;border-radius:8px;outline:none;transition:border-color .15s}
+.drill-search-box input:focus{border-color:var(--accent4)}
+.drill-search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+.drill-list{background:var(--surface2);border:1px solid var(--border);border-radius:8px;max-height:260px;overflow-y:auto;flex:1;min-width:260px}
+.drill-list::-webkit-scrollbar{width:4px}
+.drill-list::-webkit-scrollbar-track{background:transparent}
+.drill-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.drill-item{padding:9px 14px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.drill-item:last-child{border-bottom:none}
+.drill-item:hover{background:var(--surface)}
+.drill-item.on{background:rgba(167,139,250,.12);border-left:3px solid var(--accent4)}
+.drill-item-left{display:flex;flex-direction:column;gap:3px;overflow:hidden}
+.drill-item-code{font-size:.62rem;color:var(--accent4);font-weight:600;letter-spacing:.05em}
+.drill-item-name{font-size:.72rem;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drill-item-units{font-size:.65rem;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.drill-selected-badge{display:flex;align-items:center;gap:10px;padding:10px 16px;background:rgba(167,139,250,.1);border:1px solid var(--accent4);border-radius:8px;margin-bottom:20px}
+.drill-selected-badge .badge-code{font-family:var(--font-head);font-weight:700;color:var(--accent4);font-size:.9rem}
+.drill-selected-badge .badge-name{font-size:.75rem;color:var(--text)}
+.drill-selected-badge .badge-clear{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0 4px;transition:color .15s}
+.drill-selected-badge .badge-clear:hover{color:var(--accent3)}
+
+/* ── PLATFORM CARDS ── */
+.pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:22px}
+.pf-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;transition:all .15s;cursor:pointer}
+.pf-card:hover{transform:translateY(-2px)}
+.pf-card.on{background:rgba(90,200,243,.06)}
+.pf-name{font-family:var(--font-head);font-size:.82rem;font-weight:700;margin-bottom:7px}
+.pf-units{font-size:1.4rem;font-weight:800;font-family:var(--font-head)}
+.pf-share{font-size:.62rem;color:var(--muted);margin-top:4px}
+
+.empty{color:var(--muted);font-size:.8rem;text-align:center;padding:50px}
+
+
+/* ── LATEST DRR ── */
+.ldrr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-bottom:8px}
+.ldrr-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:18px 20px;transition:border-color .15s;position:relative;overflow:hidden}
+.ldrr-card:hover{border-color:var(--accent2)}
+.ldrr-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.ldrr-plat{font-family:var(--font-head);font-size:.9rem;font-weight:700;margin-bottom:12px}
+.ldrr-units{font-family:var(--font-head);font-size:2rem;font-weight:800;line-height:1}
+.ldrr-date{font-size:.62rem;color:var(--muted);margin-top:6px;display:flex;align-items:center;gap:5px}
+.freshness-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.ldrr-meta{display:flex;justify-content:space-between;align-items:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.ldrr-skus{font-size:.62rem;color:var(--muted)}
+.ldrr-delta{font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:4px}
+.ldrr-delta.up{background:rgba(74,222,128,.1);color:var(--success)}
+.ldrr-delta.dn{background:rgba(243,90,90,.1);color:var(--accent3)}
+.ldrr-delta.flat{background:var(--surface2);color:var(--muted)}
+.staleness-fresh{color:var(--success)}
+.staleness-warn{color:var(--accent5)}
+.staleness-stale{color:var(--accent3)}
+
+
+/* ── UPLOAD SCREEN ── */
+#uploadScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
+#uploadScreen.hidden{display:none}
+.up-logo{font-family:var(--font-head);font-weight:800;font-size:1.3rem;letter-spacing:-.02em;margin-bottom:48px;opacity:.9}
+.up-logo em{color:var(--accent);font-style:normal}
+.up-zone{width:420px;max-width:90vw;border:2px dashed var(--border);border-radius:16px;padding:52px 40px;text-align:center;cursor:pointer;transition:all .25s;background:var(--surface);position:relative}
+.up-zone:hover,.up-zone.drag{border-color:var(--accent);background:rgba(200,243,90,.04);transform:translateY(-2px)}
+.up-zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.up-icon{font-size:3rem;margin-bottom:20px;display:block;opacity:.7}
+.up-title{font-family:var(--font-head);font-size:1.1rem;font-weight:700;margin-bottom:8px;color:var(--text)}
+.up-sub{font-size:.72rem;color:var(--muted);line-height:1.7}
+.up-sub strong{color:var(--accent);font-weight:600}
+.up-progress{width:420px;max-width:90vw;margin-top:28px;display:none;flex-direction:column;gap:10px}
+.up-progress.show{display:flex}
+.up-prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.up-prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .3s ease;width:0%}
+.up-prog-txt{font-size:.68rem;color:var(--muted);text-align:center}
+.up-file-badge{display:flex;align-items:center;gap:8px;padding:8px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;margin-top:14px;display:none}
+.up-file-badge.show{display:flex}
+.up-file-name{font-size:.72rem;color:var(--text);font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up-hint{font-size:.6rem;color:var(--muted);margin-top:32px;text-align:center;line-height:1.8;opacity:.7}
+/* reload button in header */
+.reload-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-mono);font-size:.65rem;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .15s}
+.reload-btn:hover{border-color:var(--accent);color:var(--accent)}
+
+@media(max-width:768px){
+  .cgrid,.cgrid.t3{grid-template-columns:1fr}
+  .header,.filters,.tabs,.pane{padding-left:14px;padding-right:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">Conscious Chemist <em>DRR</em></div>
+  <div style="display:flex;align-items:center;gap:12px"><button class="reload-btn" onclick="reloadDashboard()" style="display:none" id="reloadBtn">↑ New File</button><div class="status"><div class="dot" id="statusDot"></div><span id="statusTxt">Upload an XLSX to begin</span></div></div>
+</div>
+
+<div class="filters">
+  <div class="fg"><span class="fl">From</span><input type="date" id="fFrom"></div>
+  <div class="fg"><span class="fl">To</span><input type="date" id="fTo"></div>
+  <div class="fg"><span class="fl">Platform</span>
+    <select id="fPlat"><option value="">All Platforms</option></select>
+  </div>
+  <div class="fg"><span class="fl">SKU</span>
+    <select id="fSKU"><option value="">All SKUs</option></select>
+  </div>
+  <button class="reset" onclick="resetFilters()">↺ Reset</button>
+  <span id="rowCount"></span>
+</div>
+
+<div class="tabs">
+  <button class="tab on" onclick="goTab('allskus',this)">All SKUs</button>
+  <button class="tab" onclick="goTab('heatmap',this)">Heat Map</button>
+  <button class="tab" onclick="goTab('monthly',this)">Monthly</button>
+  <button class="tab" onclick="goTab('drilldown',this)">SKU Drill-Down</button>
+  <button class="tab" onclick="goTab('platforms',this)">Platforms</button>
+  <button class="tab" onclick="goTab('latestdrr',this)">Latest DRR</button>
+</div>
+
+<!-- ALL SKUs -->
+<div class="pane on" id="pane-allskus">
+  <div class="kgrid" id="kpiGrid"></div>
+  <div class="stitle">SKU Performance</div>
+  <div class="twrap">
+    <table id="tblSKU">
+      <thead><tr>
+        <th onclick="sortTbl('tblSKU',0)">SKU ↕</th>
+        <th onclick="sortTbl('tblSKU',1)">Product Name ↕</th>
+        <th onclick="sortTbl('tblSKU',2)">Total Units ↕</th>
+        <th onclick="sortTbl('tblSKU',3)">Platforms ↕</th>
+        <th onclick="sortTbl('tblSKU',4)">Daily Avg ↕</th>
+        <th onclick="sortTbl('tblSKU',5)">Share %</th>
+      </tr></thead>
+      <tbody id="tblSKUbody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- HEAT MAP -->
+<div class="pane" id="pane-heatmap">
+  <div class="stitle">Units Heat Map <span style="font-family:var(--font-mono);font-size:.65rem;font-weight:400;color:var(--muted)">SKU × Day — intensity = absolute volume</span></div>
+  <div class="hm-month-pills" id="hmPills"></div>
+  <div class="hm-wrap"><div id="hmContainer"></div></div>
+  <div class="hm-legend"><span>0</span><div class="legend-swatches" id="hmLegend"></div><span>Max</span></div>
+</div>
+
+<!-- MONTHLY -->
+<div class="pane" id="pane-monthly">
+  <div class="cgrid">
+    <div class="ccard full">
+      <div class="ctitle">Monthly Units by Platform <span>stacked</span></div>
+      <div class="cwrap tall"><canvas id="cMonthStack"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Month-over-Month Total <span>trend</span></div>
+      <div class="cwrap"><canvas id="cMoM"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Platform Share % by Month</div>
+      <div class="cwrap"><canvas id="cMix"></canvas></div>
+    </div>
+  </div>
+  <div class="stitle">Monthly Summary Table</div>
+  <div class="twrap">
+    <table id="tblMonthly">
+      <thead><tr id="tblMonthlyHead"></tr></thead>
+      <tbody id="tblMonthlyBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DRILLDOWN -->
+<div class="pane" id="pane-drilldown">
+  <div class="stitle">SKU Drill-Down</div>
+  <div class="drill-selector">
+    <div class="drill-search-box">
+      <span class="drill-search-icon">⌕</span>
+      <input type="text" id="drillSearch" placeholder="Search by SKU code or product name…" oninput="renderDrillList()">
+    </div>
+    <div class="drill-list" id="drillList"></div>
+  </div>
+  <div id="drillContent"><div class="empty">Search and select a SKU from the list above to drill down</div></div>
+</div>
+
+<!-- PLATFORMS -->
+<div class="pane" id="pane-platforms">
+  <div class="stitle">Platform Overview</div>
+  <div class="pf-grid" id="pfGrid"></div>
+  <div class="cgrid">
+    <div class="ccard full">
+      <div class="ctitle">Daily Units per Platform <span>line — click platform card to highlight</span></div>
+      <div class="cwrap tall"><canvas id="cPlatTrend"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Platform Share of Total</div>
+      <div class="cwrap"><canvas id="cPlatPie"></canvas></div>
+    </div>
+    <div class="ccard">
+      <div class="ctitle">Top 10 SKUs <span id="platTopLabel"></span></div>
+      <div class="cwrap"><canvas id="cPlatTopSKU"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// DATA (embedded from XLSX)
+// ─────────────────────────────────────────────
+</script>
+<script>
+let RECORDS    = [];
+let SKU_MASTER = {};
+const SUPABASE_URL = 'https://uprumgkxakpmdyovkit.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVwcnVtZ2t4YWtwbWRkeW92a2l0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4Mjc0NjUsImV4cCI6MjA4NzQwMzQ2NX0.TBggmQCqfaJuShfJCac4-ongs7O-4wM-VrHSoSg7_Zg';
+const SUPABASE_TABLE = 'drr_data';
+</script>
+<script>
+// ─────────────────────────────────────────────
+// CONSTANTS
+// ─────────────────────────────────────────────
+const PCOLORS = {
+  Amazon:'#f3a85a', Flipkart:'#5ac8f3', Myntra:'#f35a7a',
+  Nykaa:'#a78bfa', Swiggy:'#c8f35a', Zepto:'#5af3a8',
+  Blinkit:'#f3e25a', Meesho:'#f35ab8', WBS:'#5a8af3'
+};
+const CHART_DEFAULTS = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{legend:{labels:{color:'#4a5070',font:{family:'DM Mono',size:10},boxWidth:10,padding:12}}},
+  scales:{
+    x:{ticks:{color:'#4a5070',font:{family:'DM Mono',size:9},maxRotation:45},grid:{color:'#1e2235'}},
+    y:{ticks:{color:'#4a5070',font:{family:'DM Mono',size:9}},grid:{color:'#1e2235'}}
+  }
+};
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+let filtered = [];
+let activeTab = 'allskus';
+let hmMonth = '';
+let drillSKU = '';
+let pfSelected = '';
+let sortSt = {};
+let charts = {};
+
+// ─────────────────────────────────────────────
+// PLATFORM PARSE CONFIG
+// ─────────────────────────────────────────────
+const DATE_FILTER_FROM = '2025-11-01';
+const PLATFORM_CONFIGS = {
+  'Amazon':   { skuCol: 0, dataStartCol: 3 },
+  'Flipkart': { skuCol: 0, dataStartCol: 4 },
+  'Myntra':   { skuCol: 0, dataStartCol: 4 },
+  'Nykaa':    { skuCol: 0, dataStartCol: 3 },
+  'Swiggy':   { skuCol: 0, dataStartCol: 3 },
+  'Blinkit':  { skuCol: 0, dataStartCol: 4 },
+  'Meesho':   { skuCol: 0, dataStartCol: 2 },
+  'Website':  { skuCol: 0, dataStartCol: 4 },
+  'Zepto':    { skuCol: 0, dataStartCol: 3, aggregate: true },
+};
+
+// ─────────────────────────────────────────────
+// SUPABASE FETCH
+// ─────────────────────────────────────────────
+function reloadDashboard() { location.reload(); }
+
+function setUpProgress(pct, msg) {
+  document.getElementById('upProgFill').style.width = pct + '%';
+  document.getElementById('upProgTxt').textContent  = msg;
+}
+
+async function fetchFromSupabase() {
+  RECORDS    = [];
+  SKU_MASTER = {};
+  setUpProgress(10, 'Fetching from Supabase…');
+
+  try {
+    let from = 0;
+    const PAGE = 1000;
+    while (true) {
+      const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=platform,sku,sku_name,date,units&order=date.asc&offset=${from}&limit=${PAGE}`;
+      const res = await fetch(url, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
+      const rows = await res.json();
+      if (!rows.length) break;
+      rows.forEach(r => {
+        if (!r.platform || !r.sku || !r.date || !r.units) return;
+        RECORDS.push({ p: r.platform, s: r.sku, d: r.date, u: Math.round(r.units) });
+        if (r.sku_name && !SKU_MASTER[r.sku]) SKU_MASTER[r.sku] = r.sku_name;
+      });
+      const pct = Math.min(10 + Math.round((RECORDS.length / 50000) * 80), 90);
+      setUpProgress(pct, `Loading… ${RECORDS.length.toLocaleString()} rows`);
+      if (rows.length < PAGE) break;
+      from += PAGE;
+    }
+    if (!RECORDS.length) throw new Error('No data in Supabase yet. Has the GitHub Action run?');
+    setUpProgress(100, 'Done!');
+    document.getElementById('uploadScreen').classList.add('hidden');
+    document.getElementById('reloadBtn').style.display = 'flex';
+    initDashboard();
+  } catch(e) {
+    setUpProgress(0, `Error: ${e.message}`);
+    document.getElementById('upProgTxt').style.color = 'var(--accent3)';
+    console.error(e);
+  }
+}
+
+// ─────────────────────────────────────────────
+// INIT DASHBOARD — called after XLSX is parsed
+// ─────────────────────────────────────────────
+function initDashboard() {
+  const allDates = [...new Set(RECORDS.map(r=>r.d))].sort();
+  const latest   = allDates[allDates.length - 1];
+
+  document.getElementById('fFrom').value = '2025-11-01';
+  document.getElementById('fTo').value   = latest;
+
+  const platforms = [...new Set(RECORDS.map(r=>r.p))].sort();
+  const skus      = [...new Set(RECORDS.map(r=>r.s))].sort();
+
+  const pSel = document.getElementById('fPlat');
+  pSel.innerHTML = '<option value="">All Platforms</option>';
+  platforms.forEach(p => pSel.add(new Option(p, p)));
+
+  const sSel = document.getElementById('fSKU');
+  sSel.innerHTML = '<option value="">All SKUs</option>';
+  skus.forEach(s => sSel.add(new Option(`${s} — ${(SKU_MASTER[s]||s).slice(0,30)}`, s)));
+
+  ['fFrom','fTo','fPlat','fSKU'].forEach(id =>
+    document.getElementById(id).addEventListener('change', applyFilters)
+  );
+
+  applyFilters();
+
+  const dot = document.getElementById('statusDot');
+  dot.style.background  = 'var(--success)';
+  dot.style.animation   = 'blink 2.5s infinite';
+  document.getElementById('statusTxt').textContent =
+    `${RECORDS.length.toLocaleString()} records · ${platforms.length} platforms · ${allDates[0]} → ${latest}`;
+}
+
+function init() { /* no-op — dashboard starts via processXLSX */ }
+
+// ─────────────────────────────────────────────
+// FILTERS
+// ─────────────────────────────────────────────
+function applyFilters() {
+  const from = document.getElementById('fFrom').value;
+  const to   = document.getElementById('fTo').value;
+  const plat = document.getElementById('fPlat').value;
+  const sku  = document.getElementById('fSKU').value;
+
+  filtered = RECORDS.filter(r => {
+    if (from && r.d < from) return false;
+    if (to   && r.d > to)   return false;
+    if (plat && r.p !== plat) return false;
+    if (sku  && r.s !== sku)  return false;
+    return true;
+  });
+  document.getElementById('rowCount').textContent = filtered.length.toLocaleString()+' rows';
+  renderTab(activeTab);
+}
+
+function resetFilters() {
+  const allDates = [...new Set(RECORDS.map(r=>r.d))].sort();
+  const last = allDates[allDates.length-1];
+  const d90 = new Date(last); d90.setDate(d90.getDate()-89);
+  document.getElementById('fFrom').value = d90.toISOString().slice(0,10);
+  document.getElementById('fTo').value = last;
+  document.getElementById('fPlat').value = '';
+  document.getElementById('fSKU').value = '';
+  applyFilters();
+}
+
+// ─────────────────────────────────────────────
+// TABS
+// ─────────────────────────────────────────────
+function goTab(id, btn) {
+  document.querySelectorAll('.pane').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
+  document.getElementById('pane-'+id).classList.add('on');
+  btn.classList.add('on');
+  activeTab = id;
+  renderTab(id);
+}
+function renderTab(id) {
+  if (id==='allskus')   renderAllSKUs();
+  else if (id==='heatmap')   renderHeatmap();
+  else if (id==='monthly')   renderMonthly();
+  else if (id==='drilldown') renderDrilldown();
+  else if (id==='platforms') renderPlatforms();
+  else if (id==='latestdrr')  renderLatestDRR();
+}
+
+// ─────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────
+function groupBy(arr, key) {
+  return arr.reduce((m,r)=>{ (m[r[key]]=m[r[key]]||[]).push(r); return m; },{});
+}
+function sum(arr) { return arr.reduce((s,r)=>s+r.u,0); }
+function fmt(n) { return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':String(n); }
+function skuName(s) { return SKU_MASTER[s] || s; }
+function killChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function makeChart(id, type, data, opts={}) {
+  killChart(id);
+  const merged = JSON.parse(JSON.stringify(CHART_DEFAULTS));
+  // deep merge opts
+  function deepMerge(a,b){ for(const k in b){ if(b[k]&&typeof b[k]==='object'&&!Array.isArray(b[k])){ a[k]=a[k]||{}; deepMerge(a[k],b[k]); }else{ a[k]=b[k]; } } return a; }
+  deepMerge(merged, opts);
+  charts[id] = new Chart(document.getElementById(id), {type, data, options: merged});
+  return charts[id];
+}
+
+// ─────────────────────────────────────────────
+// ALL SKUs
+// ─────────────────────────────────────────────
+function renderAllSKUs() {
+  const total = sum(filtered);
+  const byPlat = groupBy(filtered,'p');
+  const bySKU  = groupBy(filtered,'s');
+  const days   = [...new Set(filtered.map(r=>r.d))];
+  const topP   = Object.entries(byPlat).sort((a,b)=>sum(b[1])-sum(a[1]))[0];
+  const topS   = Object.entries(bySKU).sort((a,b)=>sum(b[1])-sum(a[1]))[0];
+  const avg    = days.length ? Math.round(total/days.length) : 0;
+  const activePlatCount = Object.keys(byPlat).length;
+
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kcard"><div class="klabel">Total Units</div><div class="kval">${fmt(total)}</div><div class="ksub">${days.length} days tracked</div></div>
+    <div class="kcard"><div class="klabel">Daily Avg</div><div class="kval">${fmt(avg)}</div><div class="ksub">units / day</div></div>
+    <div class="kcard"><div class="klabel">Active Platforms</div><div class="kval">${activePlatCount}</div><div class="ksub">of 9 total</div></div>
+    <div class="kcard"><div class="klabel">Top Platform</div><div class="kval" style="font-size:1.1rem;color:${PCOLORS[topP?.[0]]||'#fff'}">${topP?topP[0]:'—'}</div><div class="ksub">${topP?fmt(sum(topP[1]))+' units':''}</div></div>
+    <div class="kcard"><div class="klabel">Top SKU</div><div class="kval" style="font-size:.95rem">${topS?topS[0]:'—'}</div><div class="ksub">${topS?skuName(topS[0]).slice(0,28):''}…</div></div>
+  `;
+
+  const rows = Object.entries(bySKU).map(([sku,recs])=>{
+    const t = sum(recs);
+    const plats = new Set(recs.map(r=>r.p)).size;
+    const byDay = groupBy(recs,'d');
+    const daysActive = Object.keys(byDay).length;
+    const peak = Object.entries(byDay).sort((a,b)=>sum(b[1])-sum(a[1]))[0];
+    return {sku, name:skuName(sku), total:t, plats, avg:daysActive?Math.round(t/daysActive):0, share:total?((t/total)*100).toFixed(1):0, peakDay:peak?.[0]||''};
+  }).sort((a,b)=>b.total-a.total);
+
+  document.getElementById('tblSKUbody').innerHTML = rows.map(r=>`
+    <tr>
+      <td><span class="badge" style="background:var(--surface2);color:var(--accent)">${r.sku}</span></td>
+      <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.name}">${r.name}</td>
+      <td><strong>${r.total.toLocaleString()}</strong></td>
+      <td>${r.plats}</td>
+      <td>${r.avg.toLocaleString()}</td>
+      <td>
+        <div class="bar-cell">
+          <div class="mini-bar"><div class="mini-bar-fill" style="width:${r.share}%"></div></div>
+          <span>${r.share}%</span>
+        </div>
+      </td>
+    </tr>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// HEAT MAP
+// ─────────────────────────────────────────────
+function renderHeatmap() {
+  const months = [...new Set(filtered.map(r=>r.d.slice(0,7)))].sort();
+  if (!hmMonth || !months.includes(hmMonth)) hmMonth = months[months.length-1]||'';
+
+  document.getElementById('hmPills').innerHTML = months.map(m=>
+    `<button class="pill ${m===hmMonth?'on':''}" onclick="hmMonth='${m}';renderHeatmap()">${m}</button>`
+  ).join('');
+
+  const mData = filtered.filter(r=>r.d.startsWith(hmMonth));
+  const days  = [...new Set(mData.map(r=>r.d))].sort();
+  const skus  = [...new Set(mData.map(r=>r.s))].sort();
+
+  // aggregate
+  const mat = {};
+  skus.forEach(s=>{ mat[s]={}; days.forEach(d=>mat[s][d]=0); });
+  mData.forEach(r=>{ if(mat[r.s]) mat[r.s][r.d]=(mat[r.s][r.d]||0)+r.u; });
+
+  const allV = Object.values(mat).flatMap(row=>Object.values(row)).filter(v=>v>0);
+  const maxV = Math.max(...allV,1);
+
+  function hcol(v) {
+    if (!v) return '#0d0f14';
+    const t = v/maxV;
+    if (t<.2) return `rgba(90,200,243,${.15+t*2})`;
+    if (t<.5) return `rgba(167,139,250,${.25+t})`;
+    if (t<.75) return `rgba(200,243,90,${.4+t*.8})`;
+    return `rgba(243,90,90,${.5+t*.5})`;
+  }
+
+  let html = `<table class="hm-table"><thead><tr><th class="sku-h">SKU</th>${days.map(d=>`<th>${d.slice(8)}</th>`).join('')}</tr></thead><tbody>`;
+  skus.forEach(s=>{
+    const label = `${s} ${skuName(s).slice(0,18)}`;
+    html += `<tr><td class="sku-l" title="${skuName(s)}">${label}</td>`;
+    days.forEach(d=>{
+      const v=mat[s][d]||0;
+      html += `<td style="background:${hcol(v)}" title="${s} · ${d}: ${v} units">${v>0&&v<10000?v:v>=10000?fmt(v):''}</td>`;
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('hmContainer').innerHTML = html;
+
+  const steps=10;
+  document.getElementById('hmLegend').innerHTML = Array.from({length:steps},(_,i)=>{
+    const v=Math.round((i/(steps-1))*maxV);
+    return `<div class="lsw" style="background:${hcol(v)}"></div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// MONTHLY
+// ─────────────────────────────────────────────
+function renderMonthly() {
+  const months  = [...new Set(filtered.map(r=>r.d.slice(0,7)))].sort();
+  const platforms = [...new Set(filtered.map(r=>r.p))].sort();
+
+  // Stacked bar
+  killChart('cMonthStack');
+  makeChart('cMonthStack','bar',{
+    labels: months,
+    datasets: platforms.map(p=>({
+      label:p,
+      data: months.map(m=>sum(filtered.filter(r=>r.d.startsWith(m)&&r.p===p))),
+      backgroundColor: (PCOLORS[p]||'#888')+'bb',
+      borderColor: PCOLORS[p]||'#888', borderWidth:1
+    }))
+  },{scales:{x:{stacked:true,ticks:{color:'#4a5070',font:{family:'DM Mono',size:9}},grid:{color:'#1e2235'}},y:{stacked:true,ticks:{color:'#4a5070',font:{family:'DM Mono',size:9}},grid:{color:'#1e2235'}}}});
+
+  // MoM line
+  const momTotals = months.map(m=>sum(filtered.filter(r=>r.d.startsWith(m))));
+  killChart('cMoM');
+  makeChart('cMoM','line',{
+    labels:months,
+    datasets:[{label:'Total Units',data:momTotals,borderColor:'#c8f35a',backgroundColor:'rgba(200,243,90,.07)',borderWidth:2,fill:true,tension:.4,pointRadius:3,pointBackgroundColor:'#c8f35a'}]
+  });
+
+  // Mix % area
+  killChart('cMix');
+  makeChart('cMix','line',{
+    labels:months,
+    datasets: platforms.map((p,i)=>({
+      label:p,
+      data: months.map((m,mi)=>{ const t=momTotals[mi]; return t?+((sum(filtered.filter(r=>r.d.startsWith(m)&&r.p===p))/t)*100).toFixed(1):0; }),
+      borderColor:PCOLORS[p]||'#888', backgroundColor:'transparent',
+      borderWidth:1.5, tension:.3, pointRadius:2, fill:false
+    }))
+  },{scales:{x:{ticks:{color:'#4a5070',font:{family:'DM Mono',size:9}},grid:{color:'#1e2235'}},y:{max:100,ticks:{color:'#4a5070',font:{family:'DM Mono',size:9},callback:v=>v+'%'},grid:{color:'#1e2235'}}}});
+
+  // Table
+  document.getElementById('tblMonthlyHead').innerHTML =
+    `<th>Month</th>${platforms.map(p=>`<th style="color:${PCOLORS[p]||'inherit'}">${p}</th>`).join('')}<th>Total</th><th>MoM Δ</th>`;
+
+  document.getElementById('tblMonthlyBody').innerHTML = months.map((m,mi)=>{
+    const tot = momTotals[mi];
+    const prev = mi>0?momTotals[mi-1]:null;
+    const delta = prev?((((tot-prev)/prev)*100).toFixed(1)):null;
+    const cls = delta?(parseFloat(delta)>=0?'up':'dn'):'';
+    return `<tr>
+      <td>${m}</td>
+      ${platforms.map(p=>`<td>${sum(filtered.filter(r=>r.d.startsWith(m)&&r.p===p)).toLocaleString()}</td>`).join('')}
+      <td><strong>${tot.toLocaleString()}</strong></td>
+      <td class="kdelta ${cls}">${delta?(parseFloat(delta)>=0?'+':'')+delta+'%':'—'}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// DRILL DOWN
+// ─────────────────────────────────────────────
+function renderDrilldown() {
+  renderDrillList();
+  if (drillSKU) {
+    const skus = [...new Set(filtered.map(r=>r.s))];
+    if (skus.includes(drillSKU)) renderDrillContent(drillSKU);
+    else { drillSKU=''; document.getElementById('drillContent').innerHTML='<div class="empty">Search and select a SKU from the list above</div>'; }
+  }
+}
+
+function renderDrillList() {
+  const query = (document.getElementById('drillSearch')?.value||'').toLowerCase();
+  // Build sorted SKU list by total units
+  const skuTotals = {};
+  filtered.forEach(r=>{ skuTotals[r.s]=(skuTotals[r.s]||0)+r.u; });
+  let skus = Object.entries(skuTotals).sort((a,b)=>b[1]-a[1]).map(([s])=>s);
+
+  // Filter by search
+  if (query) {
+    skus = skus.filter(s =>
+      s.toLowerCase().includes(query) ||
+      (SKU_MASTER[s]||'').toLowerCase().includes(query)
+    );
+  }
+
+  const listEl = document.getElementById('drillList');
+  if (!skus.length) {
+    listEl.innerHTML = '<div class="drill-no-results">No SKUs match your search</div>';
+    return;
+  }
+
+  listEl.innerHTML = skus.map(s => {
+    const t = skuTotals[s]||0;
+    const name = SKU_MASTER[s] || s;
+    return `<div class="drill-item ${s===drillSKU?'on':''}" onclick="drillSKU='${s}';renderDrilldown()">
+      <div class="drill-item-left">
+        <span class="drill-item-code">${s}</span>
+        <span class="drill-item-name">${name}</span>
+      </div>
+      <span class="drill-item-units">${fmt(t)} units</span>
+    </div>`;
+  }).join('');
+}
+
+function renderDrillContent(sku) {
+  const data = filtered.filter(r=>r.s===sku);
+  const total = sum(data);
+  const byPlat = groupBy(data,'p');
+  const byDay  = groupBy(data,'d');
+  const days   = Object.keys(byDay).sort();
+  const platsSorted = Object.entries(byPlat).sort((a,b)=>sum(b[1])-sum(a[1]));
+
+  document.getElementById('drillContent').innerHTML = `
+    <div style="margin-bottom:18px;padding:14px 18px;background:var(--surface);border:1px solid var(--accent4);border-radius:8px;display:flex;align-items:center;gap:14px">
+      <div>
+        <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Selected SKU</div>
+        <div style="font-family:var(--font-head);font-size:1.1rem;font-weight:800;color:var(--text)">${skuName(sku)}</div>
+        <div style="font-size:.68rem;color:var(--accent4);margin-top:3px;font-family:var(--font-mono)">${sku}</div>
+      </div>
+      <button onclick="drillSKU=\'\';renderDrilldown()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:var(--font-mono);font-size:.68rem;transition:all .15s" onmouseover="this.style.borderColor=\'var(--accent3)\';this.style.color=\'var(--accent3)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">✕ Clear</button>
+    </div>
+    <div class="kgrid" style="margin-bottom:18px">
+      <div class="kcard"><div class="klabel">Total Units</div><div class="kval">${fmt(total)}</div></div>
+      <div class="kcard"><div class="klabel">Total Units</div><div class="kval">${fmt(total)}</div></div>
+      <div class="kcard"><div class="klabel">Platforms</div><div class="kval">${platsSorted.length}</div></div>
+      <div class="kcard"><div class="klabel">Days Active</div><div class="kval">${days.length}</div></div>
+      <div class="kcard"><div class="klabel">Daily Avg</div><div class="kval">${days.length?fmt(Math.round(total/days.length)):'—'}</div></div>
+    </div>
+    <div class="cgrid">
+      <div class="ccard full"><div class="ctitle">Daily Units <span>${skuName(sku).slice(0,40)}</span></div><div class="cwrap tall"><canvas id="cDrillLine"></canvas></div></div>
+      <div class="ccard"><div class="ctitle">Platform Split</div><div class="cwrap"><canvas id="cDrillDonut"></canvas></div></div>
+      <div class="ccard">
+        <div class="ctitle">Platform Breakdown</div>
+        <div class="twrap" style="margin-bottom:0">
+          <table><thead><tr><th>Platform</th><th>Units</th><th>Share</th></tr></thead>
+          <tbody>${platsSorted.map(([p,recs],i)=>{const t=sum(recs);return`<tr><td style="color:${PCOLORS[p]||'#fff'}">${p}</td><td>${t.toLocaleString()}</td><td><div class="bar-cell"><div class="mini-bar"><div class="mini-bar-fill" style="width:${((t/total)*100).toFixed(0)}%;background:${PCOLORS[p]||'var(--accent)'}"></div></div>${((t/total)*100).toFixed(1)}%</div></td></tr>`;}).join('')}</tbody>
+          </table>
+        </div>
+      </div>
+    </div>`;
+
+  // Line chart - all platforms stacked
+  const platList = platsSorted.map(([p])=>p);
+  killChart('cDrillLine');
+  makeChart('cDrillLine','line',{
+    labels: days.map(d=>d.slice(5)),
+    datasets: platList.map(p=>({
+      label:p,
+      data: days.map(d=>sum((byDay[d]||[]).filter(r=>r.p===p))),
+      borderColor:PCOLORS[p]||'#888', backgroundColor:(PCOLORS[p]||'#888')+'22',
+      borderWidth:1.5, tension:.3, pointRadius:0, fill:false
+    }))
+  });
+
+  killChart('cDrillDonut');
+  makeChart('cDrillDonut','doughnut',{
+    labels: platsSorted.map(([p])=>p),
+    datasets:[{data:platsSorted.map(([,recs])=>sum(recs)),backgroundColor:platsSorted.map(([p])=>PCOLORS[p]||'#888'),borderWidth:0}]
+  },{plugins:{legend:{position:'right',labels:{color:'#4a5070',font:{family:'DM Mono',size:10},boxWidth:10}}},scales:{x:{display:false},y:{display:false}},cutout:'62%'});
+}
+
+// ─────────────────────────────────────────────
+// PLATFORMS
+// ─────────────────────────────────────────────
+function renderPlatforms() {
+  const platforms = [...new Set(filtered.map(r=>r.p))].sort();
+  const total = sum(filtered);
+
+  document.getElementById('pfGrid').innerHTML = platforms.map(p=>{
+    const t=sum(filtered.filter(r=>r.p===p));
+    return `<div class="pf-card ${p===pfSelected?'on':''}" onclick="pfSelected=pfSelected==='${p}'?'':'${p}';renderPlatforms()" style="border-color:${p===pfSelected?PCOLORS[p]||'var(--accent2)':'var(--border)'}">
+      <div class="pf-name" style="color:${PCOLORS[p]||'var(--text)'}">${p}</div>
+      <div class="pf-units" style="color:${PCOLORS[p]||'var(--accent2)'}">${fmt(t)}</div>
+      <div class="pf-share">${((t/total)*100).toFixed(1)}% share</div>
+    </div>`;
+  }).join('');
+
+  // Trend: daily, each platform
+  const days = [...new Set(filtered.map(r=>r.d))].sort();
+  // Downsample if >60 days
+  const dispDays = days.length>90 ? days.filter((_,i)=>i%2===0) : days;
+
+  killChart('cPlatTrend');
+  makeChart('cPlatTrend','line',{
+    labels: dispDays.map(d=>d.slice(5)),
+    datasets: platforms.map(p=>({
+      label:p,
+      data: dispDays.map(d=>sum(filtered.filter(r=>r.p===p&&r.d===d))),
+      borderColor: PCOLORS[p]||'#888',
+      backgroundColor:'transparent',
+      borderWidth: pfSelected&&p!==pfSelected ? 0.5 : 2,
+      tension:.3, pointRadius:0, fill:false,
+      borderDash: pfSelected&&p!==pfSelected ? [3,3] : []
+    }))
+  });
+
+  // Pie
+  killChart('cPlatPie');
+  makeChart('cPlatPie','pie',{
+    labels:platforms,
+    datasets:[{data:platforms.map(p=>sum(filtered.filter(r=>r.p===p))),backgroundColor:platforms.map(p=>PCOLORS[p]||'#888'),borderWidth:0}]
+  },{plugins:{legend:{position:'right',labels:{color:'#4a5070',font:{family:'DM Mono',size:10},boxWidth:10}}},scales:{x:{display:false},y:{display:false}}});
+
+  // Top SKUs for selected or all
+  const pData = pfSelected ? filtered.filter(r=>r.p===pfSelected) : filtered;
+  const bySKU = groupBy(pData,'s');
+  const topSkus = Object.entries(bySKU).sort((a,b)=>sum(b[1])-sum(a[1])).slice(0,10);
+  document.getElementById('platTopLabel').textContent = pfSelected ? `— ${pfSelected}` : '— all platforms';
+
+  killChart('cPlatTopSKU');
+  makeChart('cPlatTopSKU','bar',{
+    labels: topSkus.map(([s])=>s),
+    datasets:[{
+      label:'Units',
+      data:topSkus.map(([,recs])=>sum(recs)),
+      backgroundColor: pfSelected?(PCOLORS[pfSelected]||'#5ac8f3')+'99':'#5ac8f399',
+      borderColor: pfSelected?PCOLORS[pfSelected]||'#5ac8f3':'#5ac8f3',
+      borderWidth:1
+    }]
+  },{indexAxis:'y',plugins:{legend:{display:false}}});
+}
+
+// ─────────────────────────────────────────────
+// TABLE SORT
+// ─────────────────────────────────────────────
+function sortTbl(id, col) {
+  const k = id+col;
+  sortSt[k] = !sortSt[k];
+  const tbody = document.getElementById(id).querySelector('tbody');
+  const rows = [...tbody.querySelectorAll('tr')];
+  rows.sort((a,b)=>{
+    const av=(a.cells[col]?.textContent||'').trim().replace(/[,KM]/g,'');
+    const bv=(b.cells[col]?.textContent||'').trim().replace(/[,KM]/g,'');
+    const an=parseFloat(av),bn=parseFloat(bv);
+    if(!isNaN(an)&&!isNaN(bn)) return sortSt[k]?an-bn:bn-an;
+    return sortSt[k]?av.localeCompare(bv):bv.localeCompare(av);
+  });
+  rows.forEach(r=>tbody.appendChild(r));
+}
+
+
+// ─────────────────────────────────────────────
+// LATEST DRR
+// ─────────────────────────────────────────────
+function renderLatestDRR() {
+  const platforms = [...new Set(RECORDS.map(r=>r.p))].sort();
+
+  // Build per-platform stats using ALL records (not filtered — latest date is absolute)
+  const platformStats = platforms.map(p => {
+    const pRecs = RECORDS.filter(r => r.p === p);
+    const dates = [...new Set(pRecs.map(r => r.d))].sort();
+    const latestDate = dates[dates.length - 1];
+    const latestRecs = pRecs.filter(r => r.d === latestDate);
+    const latestUnits = latestRecs.reduce((s,r)=>s+r.u, 0);
+    const skusReporting = new Set(latestRecs.map(r=>r.s)).size;
+
+    // 7-day avg (days before latest)
+    const last7dates = dates.slice(-8, -1); // 7 days before latest
+    const avg7 = last7dates.length
+      ? Math.round(last7dates.reduce((s,d) => s + pRecs.filter(r=>r.d===d).reduce((ss,r)=>ss+r.u,0), 0) / last7dates.length)
+      : null;
+
+    const deltaVs7 = (avg7 && avg7 > 0) ? (((latestUnits - avg7) / avg7) * 100).toFixed(1) : null;
+
+    // Freshness: days since latest date vs today
+    const today = new Date('2026-02-23');
+    const latestD = new Date(latestDate);
+    const gap = Math.round((today - latestD) / 86400000);
+
+    return { p, latestDate, latestUnits, skusReporting, avg7, deltaVs7, gap };
+  });
+
+  // Populate platform filter dropdown
+  const sel = document.getElementById('ldrr-plat-filter');
+  sel.innerHTML = '<option value="">All Platforms</option>' + platforms.map(p=>`<option>${p}</option>`).join('');
+
+  // Render cards
+  document.getElementById('latestDRRGrid').innerHTML = platformStats.map(s => {
+    const col = PCOLORS[s.p] || '#888';
+    const delta = s.deltaVs7 !== null ? parseFloat(s.deltaVs7) : null;
+    const deltaClass = delta === null ? 'flat' : delta >= 5 ? 'up' : delta <= -5 ? 'dn' : 'flat';
+    const deltaLabel = delta === null ? '—' : (delta >= 0 ? '+' : '') + delta + '% vs 7d avg';
+    const freshClass = s.gap <= 1 ? 'staleness-fresh' : s.gap <= 3 ? 'staleness-warn' : 'staleness-stale';
+    const freshDot = s.gap <= 1 ? 'var(--success)' : s.gap <= 3 ? 'var(--accent5)' : 'var(--accent3)';
+    const freshLabel = s.gap === 0 ? 'Today' : s.gap === 1 ? '1 day ago' : s.gap + ' days ago';
+
+    return `<div class="ldrr-card" style="border-top-color:${col}">
+      <div class="ldrr-plat" style="color:${col}">${s.p}</div>
+      <div class="ldrr-units">${s.latestUnits.toLocaleString()}</div>
+      <div class="ldrr-date">
+        <div class="freshness-dot" style="background:${freshDot}"></div>
+        <span>${s.latestDate}</span>
+        <span class="${freshClass}" style="margin-left:4px">(${freshLabel})</span>
+      </div>
+      <div class="ldrr-meta">
+        <div class="ldrr-skus">${s.skusReporting} SKUs · ${s.avg7 !== null ? s.avg7.toLocaleString()+' 7d avg' : 'no avg'}</div>
+        <div class="ldrr-delta ${deltaClass}">${deltaLabel}</div>
+      </div>
+    </div>`;
+  }).join('');
+
+  renderLatestDRRTable();
+}
+
+function renderLatestDRRTable() {
+  const selPlat = document.getElementById('ldrr-plat-filter')?.value || '';
+  const platforms = selPlat ? [selPlat] : [...new Set(RECORDS.map(r=>r.p))].sort();
+
+  const rows = [];
+  platforms.forEach(p => {
+    const pRecs = RECORDS.filter(r => r.p === p);
+    const dates = [...new Set(pRecs.map(r => r.d))].sort();
+    const latestDate = dates[dates.length - 1];
+    const last7dates = dates.slice(-8, -1);
+
+    // per-SKU
+    const skus = [...new Set(pRecs.map(r => r.s))];
+    skus.forEach(s => {
+      const latestVal = pRecs.filter(r => r.d === latestDate && r.s === s).reduce((sum,r)=>sum+r.u, 0);
+      if (!latestVal) return;
+      const avg7 = last7dates.length
+        ? Math.round(last7dates.reduce((sum,d) => sum + pRecs.filter(r=>r.d===d&&r.s===s).reduce((ss,r)=>ss+r.u,0), 0) / last7dates.length)
+        : 0;
+      const delta = avg7 > 0 ? (((latestVal - avg7) / avg7) * 100).toFixed(1) : null;
+      rows.push({ sku: s, name: SKU_MASTER[s] || s, platform: p, latestDate, latestVal, avg7, delta });
+    });
+  });
+
+  rows.sort((a,b) => b.latestVal - a.latestVal);
+
+  document.getElementById('ldrr-table-note').textContent = rows.length + ' SKU-platform rows';
+  document.getElementById('tblLatestDRRBody').innerHTML = rows.map(r => {
+    const d = r.delta !== null ? parseFloat(r.delta) : null;
+    const cls = d === null ? '' : d >= 10 ? 'up' : d <= -10 ? 'dn' : '';
+    const dLabel = d === null ? '—' : (d >= 0 ? '+' : '') + d + '%';
+    const col = PCOLORS[r.platform] || '#888';
+    return `<tr>
+      <td><span class="badge" style="background:var(--surface2);color:var(--accent)">${r.sku}</span></td>
+      <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.name}">${r.name}</td>
+      <td><span style="color:${col};font-weight:600">${r.platform}</span></td>
+      <td style="color:var(--muted)">${r.latestDate}</td>
+      <td><strong>${r.latestVal.toLocaleString()}</strong></td>
+      <td>${r.avg7 > 0 ? r.avg7.toLocaleString() : '—'}</td>
+      <td><span class="kdelta ${cls}">${dLabel}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────
+// START
+// ─────────────────────────────────────────────
+fetchFromSupabase();
+</script>
+
+<!-- LATEST DRR -->
+<div class="pane" id="pane-latestdrr">
+  <div class="stitle">Latest DRR by Platform <span style="font-family:var(--font-mono);font-size:.65rem;font-weight:400;color:var(--muted)">most recent day's data available per platform</span></div>
+  <div id="latestDRRGrid" class="ldrr-grid"></div>
+  <div class="stitle" style="margin-top:28px">SKU-Level Latest DRR</div>
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+    <span class="fl">Platform</span>
+    <select id="ldrr-plat-filter" onchange="renderLatestDRRTable()" style="background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font-mono);font-size:.72rem;padding:5px 10px;border-radius:4px;outline:none">
+      <option value="">All Platforms</option>
+    </select>
+    <span style="font-size:.65rem;color:var(--muted)" id="ldrr-table-note"></span>
+  </div>
+  <div class="twrap">
+    <table id="tblLatestDRR">
+      <thead><tr>
+        <th onclick="sortTbl('tblLatestDRR',0)">SKU ↕</th>
+        <th onclick="sortTbl('tblLatestDRR',1)">Product Name ↕</th>
+        <th onclick="sortTbl('tblLatestDRR',2)">Platform ↕</th>
+        <th onclick="sortTbl('tblLatestDRR',3)">Latest Date ↕</th>
+        <th onclick="sortTbl('tblLatestDRR',4)">Latest Units ↕</th>
+        <th onclick="sortTbl('tblLatestDRR',5)">7-Day Avg ↕</th>
+        <th onclick="sortTbl('tblLatestDRR',6)">vs 7-Day Avg</th>
+      </tr></thead>
+      <tbody id="tblLatestDRRBody"></tbody>
+    </table>
+  </div>
+</div>
+
+
+<!-- LOADING SCREEN -->
+<div id="uploadScreen">
+  <div class="up-logo">Conscious Chemist <em>DRR</em></div>
+  <div class="up-progress show" id="upProgress" style="display:flex!important">
+    <div class="up-prog-bar"><div class="up-prog-fill" id="upProgFill" style="width:0%"></div></div>
+    <div class="up-prog-txt" id="upProgTxt">Connecting to Supabase…</div>
+  </div>
+  <div class="up-hint">
+    Fetching live data · Updated nightly via GitHub Actions
+  </div>
+</div>
+
+</body>
+</html>
