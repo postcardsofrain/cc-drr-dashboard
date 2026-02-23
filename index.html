@@ -369,8 +369,12 @@ const PLATFORM_CONFIGS = {
 function reloadDashboard() { location.reload(); }
 
 function setUpProgress(pct, msg) {
-  document.getElementById('upProgFill').style.width = pct + '%';
-  document.getElementById('upProgTxt').textContent  = msg;
+  const fill = document.getElementById('upProgFill');
+  const txt  = document.getElementById('upProgTxt');
+  const stat = document.getElementById('statusTxt');
+  if (fill) fill.style.width = pct + '%';
+  if (txt)  txt.textContent  = msg;
+  if (stat) stat.textContent = msg;
 }
 
 async function fetchFromSupabase() {
@@ -401,8 +405,8 @@ async function fetchFromSupabase() {
     }
     if (!RECORDS.length) throw new Error('No data in Supabase yet. Has the GitHub Action run?');
     setUpProgress(100, 'Done!');
-    document.getElementById('uploadScreen').classList.add('hidden');
-    document.getElementById('reloadBtn').style.display = 'flex';
+    const us = document.getElementById('uploadScreen'); if(us) us.classList.add('hidden');
+    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'flex';
     initDashboard();
   } catch(e) {
     setUpProgress(0, `Error: ${e.message}`);
