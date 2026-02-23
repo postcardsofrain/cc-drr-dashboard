@@ -13,6 +13,21 @@
   --accent5:#f3a85a; --text:#dde2f0; --muted:#4a5070; --success:#4ade80;
   --font-head:'Syne',sans-serif; --font-mono:'DM Mono',monospace;
 }
+
+/* ── LIGHT THEME ── */
+body.light {
+  --bg:#f4f6f9; --surface:#ffffff; --surface2:#eef1f6; --border:#dce1ea;
+  --accent:#5a8a00; --accent2:#0077aa; --accent3:#cc2244; --accent4:#6b46c1;
+  --accent5:#b45309; --text:#1a2035; --muted:#8892a4; --success:#16a34a;
+}
+
+/* ── THEME TOGGLE ── */
+.theme-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none}
+.theme-toggle-track{width:42px;height:22px;background:var(--surface2);border:1.5px solid var(--border);border-radius:11px;position:relative;transition:all .25s;flex-shrink:0}
+body.light .theme-toggle-track{background:#e2e8f0;border-color:#cbd5e1}
+.theme-toggle-thumb{width:16px;height:16px;border-radius:50%;background:var(--muted);position:absolute;top:2px;left:2px;transition:all .25s;display:flex;align-items:center;justify-content:center;font-size:9px}
+body.light .theme-toggle-thumb{background:var(--accent);transform:translateX(20px)}
+.theme-toggle-label{font-size:.62rem;color:var(--muted);letter-spacing:.05em;text-transform:uppercase;transition:color .2s}
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font-mono);min-height:100vh;overflow-x:hidden;font-size:13px}
 
@@ -196,7 +211,14 @@ tr:hover td{background:var(--surface2)}
 
 <div class="header">
   <div class="logo">Conscious Chemist <em>DRR</em></div>
-  <div style="display:flex;align-items:center;gap:12px"><button class="reload-btn" onclick="reloadDashboard()" style="display:none" id="reloadBtn">↑ New File</button><div class="status"><div class="dot" id="statusDot"></div><span id="statusTxt">Upload an XLSX to begin</span></div></div>
+  <div style="display:flex;align-items:center;gap:14px">
+    <div class="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode">
+      <div class="theme-toggle-track"><div class="theme-toggle-thumb" id="toggleThumb">☀</div></div>
+      <span class="theme-toggle-label" id="toggleLabel">Light</span>
+    </div>
+    <button class="reload-btn" onclick="reloadDashboard()" style="display:none" id="reloadBtn">↑ New File</button>
+    <div class="status"><div class="dot" id="statusDot"></div><span id="statusTxt">Connecting to Supabase…</span></div>
+  </div>
 </div>
 
 <div class="filters">
@@ -367,6 +389,28 @@ const PLATFORM_CONFIGS = {
 // SUPABASE FETCH
 // ─────────────────────────────────────────────
 function reloadDashboard() { location.reload(); }
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  document.getElementById('toggleThumb').textContent  = isLight ? '🌙' : '☀';
+  document.getElementById('toggleLabel').textContent  = isLight ? 'Dark' : 'Light';
+  localStorage.setItem('drr_theme', isLight ? 'light' : 'dark');
+  // Redraw charts so they pick up new CSS vars
+  Object.values(charts).forEach(c => { if (c) c.update(); });
+}
+
+// Apply saved theme on load
+(function() {
+  if (localStorage.getItem('drr_theme') === 'light') {
+    document.body.classList.add('light');
+    document.addEventListener('DOMContentLoaded', () => {
+      const thumb = document.getElementById('toggleThumb');
+      const label = document.getElementById('toggleLabel');
+      if (thumb) thumb.textContent = '🌙';
+      if (label) label.textContent = 'Dark';
+    });
+  }
+})();
 
 function setUpProgress(pct, msg) {
   const fill = document.getElementById('upProgFill');
