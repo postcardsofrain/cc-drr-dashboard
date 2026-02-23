@@ -1,0 +1,42 @@
+name: Nightly DRR Sync
+
+on:
+  # Run every night at 23:30 IST (18:00 UTC)
+  schedule:
+    - cron: '0 18 * * *'
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  sync:
+    name: Sync CC DRR to Supabase
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: pip install requests openpyxl
+
+      - name: Run CC DRR sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/cc_drr_sync.py
+
+      - name: Log completion
+        if: success()
+        run: echo "✅ CC DRR sync completed successfully at $(date -u)"
+
+      - name: Log failure
+        if: failure()
+        run: echo "❌ CC DRR sync failed at $(date -u)"
