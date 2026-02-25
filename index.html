@@ -200,6 +200,11 @@ tr:hover td{background:var(--surface2)}
 /* reload button in header */
 .reload-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:var(--font-mono);font-size:.65rem;padding:4px 10px;border-radius:4px;cursor:pointer;transition:all .15s}
 .reload-btn:hover{border-color:var(--accent);color:var(--accent)}
+.sync-btn{background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-mono);font-size:.65rem;padding:4px 12px;border-radius:4px;cursor:pointer;transition:all .2s;display:none;align-items:center;gap:6px}
+.sync-btn:hover{background:var(--accent);color:var(--bg)}
+.sync-btn.running{opacity:.6;cursor:not-allowed;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:.6}50%{opacity:1}}
+.sync-status{font-size:.6rem;color:var(--muted);transition:color .2s}
 
 @media(max-width:768px){
   .cgrid,.cgrid.t3{grid-template-columns:1fr}
@@ -217,6 +222,8 @@ tr:hover td{background:var(--surface2)}
       <span class="theme-toggle-label" id="toggleLabel">Light</span>
     </div>
     <button class="reload-btn" onclick="reloadDashboard()" style="display:none" id="reloadBtn">↑ New File</button>
+    <button class="sync-btn" onclick="triggerSync()" id="syncBtn">⟳ Sync Now</button>
+    <span class="sync-status" id="syncStatus"></span>
     <div class="status"><div class="dot" id="statusDot"></div><span id="statusTxt">Connecting to Supabase…</span></div>
   </div>
 </div>
@@ -390,6 +397,56 @@ const PLATFORM_CONFIGS = {
 // ─────────────────────────────────────────────
 function reloadDashboard() { location.reload(); }
 
+const GITHUB_TOKEN = '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';
+const GITHUB_REPO  = 'postcardsofrain/cc-drr-dashboard';
+const WORKFLOW_ID  = 'nightly_sync.yml';
+
+async function triggerSync() {
+  const btn    = document.getElementById('syncBtn');
+  const status = document.getElementById('syncStatus');
+  if (btn.classList.contains('running')) return;
+
+  btn.classList.add('running');
+  btn.textContent = '⟳ Syncing…';
+  status.textContent = 'Triggering GitHub Action…';
+  status.style.color = 'var(--accent2)';
+
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${GITHUB_TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ ref: 'main' })
+      }
+    );
+
+    if (res.status === 204) {
+      status.textContent = '✓ Sync started — takes ~90 seconds';
+      status.style.color = 'var(--success)';
+      btn.textContent = '⟳ Running…';
+      // After 100 seconds, reload dashboard to show fresh data
+      setTimeout(() => {
+        status.textContent = 'Reloading dashboard…';
+        setTimeout(() => location.reload(), 2000);
+      }, 100000);
+    } else {
+      const err = await res.text();
+      throw new Error(`HTTP ${res.status}: ${err}`);
+    }
+  } catch(e) {
+    status.textContent = '✗ Failed: ' + e.message;
+    status.style.color = 'var(--accent3)';
+    btn.classList.remove('running');
+    btn.textContent = '⟳ Sync Now';
+    console.error(e);
+  }
+}
+
 function toggleTheme() {
   const isLight = document.body.classList.toggle('light');
   document.getElementById('toggleThumb').textContent  = isLight ? '🌙' : '☀';
@@ -491,6 +548,8 @@ function initDashboard() {
   dot.style.animation   = 'blink 2.5s infinite';
   document.getElementById('statusTxt').textContent =
     `${RECORDS.length.toLocaleString()} records · ${platforms.length} platforms · ${allDates[0]} → ${latest}`;
+  const sb = document.getElementById('syncBtn');
+  if (sb) sb.style.display = 'flex';
 }
 
 function init() { /* no-op — dashboard starts via processXLSX */ }
