@@ -397,17 +397,40 @@ const PLATFORM_CONFIGS = {
 // ─────────────────────────────────────────────
 function reloadDashboard() { location.reload(); }
 
-// Sync trigger — opens GitHub Actions page to run manually
-// Token is not stored in HTML (GitHub auto-revokes embedded tokens)
-function triggerSync() {
+// Sync trigger — calls Cloudflare Worker which holds the token securely
+const WORKER_URL = 'https://cc-drr-sync.sherin-vadayi-suresh.workers.dev';
+
+async function triggerSync() {
+  const btn    = document.getElementById('syncBtn');
   const status = document.getElementById('syncStatus');
-  // Open GitHub Actions run workflow page in new tab
-  window.open(
-    'https://github.com/postcardsofrain/cc-drr-dashboard/actions/workflows/nightly_sync.yml',
-    '_blank'
-  );
-  status.textContent = 'Opened GitHub Actions → click Run workflow → come back in 90s and refresh';
+  if (btn.classList.contains('running')) return;
+
+  btn.classList.add('running');
+  btn.textContent = '⟳ Syncing…';
+  status.textContent = 'Triggering sync…';
   status.style.color = 'var(--accent2)';
+
+  try {
+    const res = await fetch(WORKER_URL, { method: 'POST' });
+    const data = await res.json();
+
+    if (data.ok) {
+      status.textContent = '✓ Sync started — refreshing in 90s';
+      status.style.color = 'var(--success)';
+      btn.textContent = '⟳ Running…';
+      setTimeout(() => {
+        status.textContent = 'Reloading…';
+        setTimeout(() => location.reload(), 2000);
+      }, 90000);
+    } else {
+      throw new Error(data.error || 'Unknown error');
+    }
+  } catch(e) {
+    status.textContent = '✗ ' + e.message;
+    status.style.color = 'var(--accent3)';
+    btn.classList.remove('running');
+    btn.textContent = '⟳ Sync Now';
+  }
 }
 
 function toggleTheme() {
