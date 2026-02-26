@@ -397,54 +397,17 @@ const PLATFORM_CONFIGS = {
 // ─────────────────────────────────────────────
 function reloadDashboard() { location.reload(); }
 
-const GITHUB_TOKEN = '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';
-const GITHUB_REPO  = 'postcardsofrain/cc-drr-dashboard';
-const WORKFLOW_ID  = 'nightly_sync.yml';
-
-async function triggerSync() {
-  const btn    = document.getElementById('syncBtn');
+// Sync trigger — opens GitHub Actions page to run manually
+// Token is not stored in HTML (GitHub auto-revokes embedded tokens)
+function triggerSync() {
   const status = document.getElementById('syncStatus');
-  if (btn.classList.contains('running')) return;
-
-  btn.classList.add('running');
-  btn.textContent = '⟳ Syncing…';
-  status.textContent = 'Triggering GitHub Action…';
+  // Open GitHub Actions run workflow page in new tab
+  window.open(
+    'https://github.com/postcardsofrain/cc-drr-dashboard/actions/workflows/nightly_sync.yml',
+    '_blank'
+  );
+  status.textContent = 'Opened GitHub Actions → click Run workflow → come back in 90s and refresh';
   status.style.color = 'var(--accent2)';
-
-  try {
-    const res = await fetch(
-      `https://api.github.com/repos/${GITHUB_REPO}/actions/workflows/${WORKFLOW_ID}/dispatches`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GITHUB_TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ ref: 'main' })
-      }
-    );
-
-    if (res.status === 204) {
-      status.textContent = '✓ Sync started — takes ~90 seconds';
-      status.style.color = 'var(--success)';
-      btn.textContent = '⟳ Running…';
-      // After 100 seconds, reload dashboard to show fresh data
-      setTimeout(() => {
-        status.textContent = 'Reloading dashboard…';
-        setTimeout(() => location.reload(), 2000);
-      }, 100000);
-    } else {
-      const err = await res.text();
-      throw new Error(`HTTP ${res.status}: ${err}`);
-    }
-  } catch(e) {
-    status.textContent = '✗ Failed: ' + e.message;
-    status.style.color = 'var(--accent3)';
-    btn.classList.remove('running');
-    btn.textContent = '⟳ Sync Now';
-    console.error(e);
-  }
 }
 
 function toggleTheme() {
