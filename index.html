@@ -665,8 +665,8 @@ async function fetchFromSupabase() {
     document.getElementById('loadingScreen').classList.add('hidden');
     const sb = document.getElementById('syncBtn'); if (sb) sb.style.display = 'inline-flex';
     const rb = document.getElementById('reloadBtn'); if (rb) rb.style.display = 'inline-flex';
-    if (dot) dot.className = 'dot';
     initDashboard();
+    if (dot) dot.className = 'dot';
   } catch(e) {
     setUpProgress(0, `Error: ${e.message}`);
     const t = document.getElementById('upProgTxt'); if(t) t.style.color = 'var(--red)';
@@ -1408,13 +1408,7 @@ function renderLatestDRRTable() {
 // ─────────────────────────────────────────────
 fetchFromSupabase();
 
-// Override initDashboard status update for new dot class
-const _origInit = initDashboard;
-function initDashboard() {
-  _origInit();
-  const dot = document.getElementById('statusDot');
-  if (dot) dot.className = 'dot';
-}
+// dot class updated inline in fetchFromSupabase
 </script>
 </body>
 </html>
