@@ -605,9 +605,9 @@ async function fetchFromSupabase() {
     if (!RECORDS.length) throw new Error('No data found. Has the GitHub Action run?');
     setUpProgress(100, 'Done!');
     document.getElementById('loadingScreen').classList.add('hidden');
-    const sb = document.getElementById('syncBtn'); if(sb) sb.style.display = 'flex';
-    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'flex';
-    if (dot) { dot.className = 'status-dot'; }
+    const sb = document.getElementById('syncBtn'); if(sb) sb.style.display = 'inline-flex';
+    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'inline-flex';
+    if (dot) { dot.className = 'dot'; }
     initDashboard();
   } catch(e) {
     setUpProgress(0, `Error: ${e.message}`);
@@ -665,8 +665,8 @@ async function fetchFromSupabase() {
     document.getElementById('loadingScreen').classList.add('hidden');
     const sb = document.getElementById('syncBtn'); if (sb) sb.style.display = 'inline-flex';
     const rb = document.getElementById('reloadBtn'); if (rb) rb.style.display = 'inline-flex';
-    initDashboard();
     if (dot) dot.className = 'dot';
+    initDashboard();
   } catch(e) {
     setUpProgress(0, `Error: ${e.message}`);
     const t = document.getElementById('upProgTxt'); if(t) t.style.color = 'var(--red)';
@@ -752,7 +752,7 @@ async function triggerSync() {
   btn.classList.add('running');
   btn.textContent = '⟳ Syncing…';
   status.textContent = 'Triggering sync…';
-  status.style.color = 'var(--accent2)';
+  status.style.color = 'var(--teal)';
 
   try {
     const res = await fetch(WORKER_URL, { method: 'POST' });
@@ -760,7 +760,7 @@ async function triggerSync() {
 
     if (data.ok) {
       status.textContent = '✓ Sync started — refreshing in 90s';
-      status.style.color = 'var(--success)';
+      status.style.color = 'var(--green)';
       btn.textContent = '⟳ Running…';
       setTimeout(() => {
         status.textContent = 'Reloading…';
@@ -771,7 +771,7 @@ async function triggerSync() {
     }
   } catch(e) {
     status.textContent = '✗ ' + e.message;
-    status.style.color = 'var(--accent3)';
+    status.style.color = 'var(--red)';
     btn.classList.remove('running');
     btn.textContent = '⟳ Sync Now';
   }
@@ -837,11 +837,11 @@ async function fetchFromSupabase() {
     if (!RECORDS.length) throw new Error('No data in Supabase yet. Has the GitHub Action run?');
     setUpProgress(100, 'Done!');
     const us = document.getElementById('uploadScreen'); if(us) us.classList.add('hidden');
-    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'flex';
+    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'inline-flex';
     initDashboard();
   } catch(e) {
     setUpProgress(0, `Error: ${e.message}`);
-    document.getElementById('upProgTxt').style.color = 'var(--accent3)';
+    document.getElementById('upProgTxt').style.color = 'var(--red)';
     console.error(e);
   }
 }
@@ -871,15 +871,16 @@ function initDashboard() {
     document.getElementById(id).addEventListener('change', applyFilters)
   );
 
-  applyFilters();
+  try { applyFilters(); } catch(e) { console.error('applyFilters error:', e); }
 
   const dot = document.getElementById('statusDot');
-  dot.style.background  = 'var(--success)';
-  dot.style.animation   = 'blink 2.5s infinite';
-  document.getElementById('statusTxt').textContent =
-    `${RECORDS.length.toLocaleString()} records · ${platforms.length} platforms · ${allDates[0]} → ${latest}`;
+  if (dot) dot.className = 'dot';
+  const stxt = document.getElementById('statusTxt');
+  if (stxt) stxt.textContent = `${RECORDS.length.toLocaleString()} records · ${platforms.length} platforms · ${allDates[0]} → ${latest}`;
   const sb = document.getElementById('syncBtn');
-  if (sb) sb.style.display = 'flex';
+  if (sb) sb.style.display = 'inline-flex';
+  const rb = document.getElementById('reloadBtn');
+  if (rb) rb.style.display = 'inline-flex';
 }
 
 function init() { /* no-op — dashboard starts via processXLSX */ }
@@ -969,7 +970,7 @@ function renderAllSKUs() {
   const activePlatCount = Object.keys(byPlat).length;
 
   const topPlatName = topP ? topP[0] : '—';
-  const topPlatColor = topP ? (PCOLORS[topP[0]] || 'var(--accent)') : 'var(--accent)';
+  const topPlatColor = topP ? (PCOLORS[topP[0]] || 'var(--indigo)') : 'var(--indigo)';
   const topPlatUnits = topP ? fmt(sum(topP[1])) + ' units' : '';
   document.getElementById('kpiGrid').innerHTML = `
     <div class="kpi-card"><div class="kpi-label">Total Units</div><div class="kpi-val">${fmt(total)}</div><div class="kpi-sub">${days.length} days tracked</div></div>
@@ -990,7 +991,7 @@ function renderAllSKUs() {
 
   document.getElementById('tblSKUbody').innerHTML = rows.map(r=>`
     <tr>
-      <td><span class="chip" style="background:var(--surface2);color:var(--accent)">${r.sku}</span></td>
+      <td><span class="chip" style="background:var(--surface2);color:var(--indigo)">${r.sku}</span></td>
       <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.name}">${r.name}</td>
       <td><strong>${r.total.toLocaleString()}</strong></td>
       <td>${r.plats}</td>
@@ -1168,13 +1169,13 @@ function renderDrillContent(sku) {
   const platsSorted = Object.entries(byPlat).sort((a,b)=>sum(b[1])-sum(a[1]));
 
   document.getElementById('drillContent').innerHTML = `
-    <div style="margin-bottom:18px;padding:14px 18px;background:var(--surface);border:1px solid var(--accent4);border-radius:8px;display:flex;align-items:center;gap:14px">
+    <div style="margin-bottom:18px;padding:14px 18px;background:var(--surface);border:1px solid var(--violet);border-radius:8px;display:flex;align-items:center;gap:14px">
       <div>
-        <div style="font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Selected SKU</div>
+        <div style="font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px">Selected SKU</div>
         <div style="font-family:var(--font-head);font-size:1.1rem;font-weight:800;color:var(--text)">${skuName(sku)}</div>
-        <div style="font-size:.68rem;color:var(--accent4);margin-top:3px;font-family:var(--font-mono)">${sku}</div>
+        <div style="font-size:.68rem;color:var(--violet);margin-top:3px;font-family:var(--font-mono)">${sku}</div>
       </div>
-      <button onclick="drillSKU=\'\';renderDrilldown()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:var(--font-mono);font-size:.68rem;transition:all .15s" onmouseover="this.style.borderColor=\'var(--accent3)\';this.style.color=\'var(--accent3)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--muted)\'">✕ Clear</button>
+      <button onclick="drillSKU=\'\';renderDrilldown()" style="margin-left:auto;background:none;border:1px solid var(--border);color:var(--text3);border-radius:6px;padding:6px 12px;cursor:pointer;font-family:var(--font-mono);font-size:.68rem;transition:all .15s" onmouseover="this.style.borderColor=\'var(--red)\';this.style.color=\'var(--red)\'" onmouseout="this.style.borderColor=\'var(--border)\';this.style.color=\'var(--text3)\'">✕ Clear</button>
     </div>
     <div class="kgrid" style="margin-bottom:18px">
       <div class="kpi-card"><div class="kpi-label">Total Units</div><div class="kpi-val">${fmt(total)}</div></div>
@@ -1190,7 +1191,7 @@ function renderDrillContent(sku) {
         <div class="chart-title">Platform Breakdown</div>
         <div class="table-wrap" style="margin-bottom:0">
           <table><thead><tr><th>Platform</th><th>Units</th><th>Share</th></tr></thead>
-          <tbody>${platsSorted.map(([p,recs],i)=>{const t=sum(recs);return`<tr><td style="color:${PCOLORS[p]||'#fff'}">${p}</td><td>${t.toLocaleString()}</td><td><div class="bar-wrap"><div class="mini-bar"><div class="mini-bar-fill" style="width:${((t/total)*100).toFixed(0)}%;background:${PCOLORS[p]||'var(--accent)'}"></div></div>${((t/total)*100).toFixed(1)}%</div></td></tr>`;}).join('')}</tbody>
+          <tbody>${platsSorted.map(([p,recs],i)=>{const t=sum(recs);return`<tr><td style="color:${PCOLORS[p]||'#fff'}">${p}</td><td>${t.toLocaleString()}</td><td><div class="bar-wrap"><div class="mini-bar"><div class="mini-bar-fill" style="width:${((t/total)*100).toFixed(0)}%;background:${PCOLORS[p]||'var(--indigo)'}"></div></div>${((t/total)*100).toFixed(1)}%</div></td></tr>`;}).join('')}</tbody>
           </table>
         </div>
       </div>
@@ -1225,9 +1226,9 @@ function renderPlatforms() {
 
   document.getElementById('pfGrid').innerHTML = platforms.map(p=>{
     const t=sum(filtered.filter(r=>r.p===p));
-    return `<div class="pf-card ${p===pfSelected?'active':''}" onclick="pfSelected=pfSelected==='${p}'?'':'${p}';renderPlatforms()" style="border-color:${p===pfSelected?PCOLORS[p]||'var(--accent2)':'var(--border)'}">
+    return `<div class="pf-card ${p===pfSelected?'active':''}" onclick="pfSelected=pfSelected==='${p}'?'':'${p}';renderPlatforms()" style="border-color:${p===pfSelected?PCOLORS[p]||'var(--teal)':'var(--border)'}">
       <div class="pf-name" style="color:${PCOLORS[p]||'var(--text)'}">${p}</div>
-      <div class="pf-units" style="color:${PCOLORS[p]||'var(--accent2)'}">${fmt(t)}</div>
+      <div class="pf-units" style="color:${PCOLORS[p]||'var(--teal)'}">${fmt(t)}</div>
       <div class="pf-share">${((t/total)*100).toFixed(1)}% share</div>
     </div>`;
   }).join('');
@@ -1338,7 +1339,7 @@ function renderLatestDRR() {
     const deltaClass = delta === null ? 'flat' : delta >= 5 ? 'up' : delta <= -5 ? 'dn' : 'flat';
     const deltaLabel = delta === null ? '—' : (delta >= 0 ? '+' : '') + delta + '% vs 7d avg';
     const freshClass = s.gap <= 1 ? 'staleness-fresh' : s.gap <= 3 ? 'staleness-warn' : 'staleness-stale';
-    const freshDot = s.gap <= 1 ? 'var(--success)' : s.gap <= 3 ? 'var(--accent5)' : 'var(--accent3)';
+    const freshDot = s.gap <= 1 ? 'var(--green)' : s.gap <= 3 ? 'var(--amber)' : 'var(--red)';
     const freshLabel = s.gap === 0 ? 'Today' : s.gap === 1 ? '1 day ago' : s.gap + ' days ago';
 
     return `<div class="ldrr-card" style="border-top-color:${col}">
@@ -1392,10 +1393,10 @@ function renderLatestDRRTable() {
     const dLabel = d === null ? '—' : (d >= 0 ? '+' : '') + d + '%';
     const col = PCOLORS[r.platform] || '#888';
     return `<tr>
-      <td><span class="chip" style="background:var(--surface2);color:var(--accent)">${r.sku}</span></td>
+      <td><span class="chip" style="background:var(--surface2);color:var(--indigo)">${r.sku}</span></td>
       <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${r.name}">${r.name}</td>
       <td><span style="color:${col};font-weight:600">${r.platform}</span></td>
-      <td style="color:var(--muted)">${r.latestDate}</td>
+      <td style="color:var(--text3)">${r.latestDate}</td>
       <td><strong>${r.latestVal.toLocaleString()}</strong></td>
       <td>${r.avg7 > 0 ? r.avg7.toLocaleString() : '—'}</td>
       <td><span class="${cls==='up'?'delta-up':cls==='dn'?'delta-dn':'delta-flat'}">${dLabel}</span></td>
