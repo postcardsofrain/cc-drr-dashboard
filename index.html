@@ -557,90 +557,28 @@ const SUPABASE_KEY   = 'sb_publishable_AUNrLPjCZPdqJAddshDLBQ_rJSHVgBI';
 const SUPABASE_TABLE = 'drr_data';
 </script>
 <script>
-function toggleTheme() {
-  const isDark = document.body.classList.toggle('dark');
-  const ti = document.getElementById('themeIcon'); if(ti) ti.textContent = isDark ? '☀️' : '🌙';
-  const tl = document.getElementById('themeLabel'); if(tl) tl.textContent = isDark ? 'Light' : 'Dark';
-  localStorage.setItem('drr_theme', isDark ? 'dark' : 'light');
-  Object.values(charts).forEach(c => { if(c) { c.options = Object.assign(c.options, getChartDefaults()); c.update(); } });
-}
 
-function setUpProgress(pct, msg) {
-  const fill = document.getElementById('upProgFill');
-  const txt  = document.getElementById('upProgTxt');
-  const stat = document.getElementById('statusTxt');
-  if (fill) fill.style.width = pct + '%';
-  if (txt)  txt.textContent  = msg;
-  if (stat) stat.textContent = msg;
-}
-
-async function fetchFromSupabase() {
-  RECORDS    = [];
-  SKU_MASTER = {};
-  setUpProgress(10, 'Fetching from Supabase…');
-  const dot = document.getElementById('statusDot');
-  if (dot) { dot.className = 'status-dot loading'; }
-
-  try {
-    let from = 0;
-    const PAGE = 1000;
-    while (true) {
-      const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=platform,sku,sku_name,date,units&order=date.asc&offset=${from}&limit=${PAGE}`;
-      const res = await fetch(url, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-      });
-      if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
-      const rows = await res.json();
-      if (!rows.length) break;
-      rows.forEach(r => {
-        if (!r.platform || !r.sku || !r.date || r.units === undefined) return;
-        RECORDS.push({ p: r.platform, s: r.sku, d: r.date, u: Math.round(r.units) });
-        if (r.sku_name && !SKU_MASTER[r.sku]) SKU_MASTER[r.sku] = r.sku_name;
-      });
-      const pct = Math.min(10 + Math.round((RECORDS.length / 50000) * 80), 90);
-      setUpProgress(pct, `Loading… ${RECORDS.length.toLocaleString()} rows`);
-      if (rows.length < PAGE) break;
-      from += PAGE;
-    }
-    if (!RECORDS.length) throw new Error('No data found. Has the GitHub Action run?');
-    setUpProgress(100, 'Done!');
-    document.getElementById('loadingScreen').classList.add('hidden');
-    const sb = document.getElementById('syncBtn'); if(sb) sb.style.display = 'inline-flex';
-    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'inline-flex';
-    if (dot) { dot.className = 'dot'; }
-    initDashboard();
-  } catch(e) {
-    setUpProgress(0, `Error: ${e.message}`);
-    if (document.getElementById('upProgTxt')) document.getElementById('upProgTxt').style.color = 'var(--red)';
-    console.error(e);
-  }
-}
-
-// Apply saved theme on load
 (function() {
   if (localStorage.getItem('drr_theme') === 'dark') {
     document.body.classList.add('dark');
-    document.addEventListener('DOMContentLoaded', () => {
-      const icon = document.getElementById('themeIcon');
-      const label = document.getElementById('themeLabel');
-      if (icon) icon.textContent = '☀️';
-      if (label) label.textContent = 'Light';
+    window.addEventListener('DOMContentLoaded', () => {
+      const i = document.getElementById('themeIcon');  if (i) i.textContent  = '☀️';
+      const l = document.getElementById('themeLabel'); if (l) l.textContent = 'Light';
     });
   }
 })();
 
+
 function setUpProgress(pct, msg) {
-  const fill = document.getElementById('upProgFill');
-  const txt  = document.getElementById('upProgTxt');
-  const stat = document.getElementById('statusTxt');
-  if (fill) fill.style.width = pct + '%';
-  if (txt)  txt.textContent  = msg;
-  if (stat) stat.textContent = msg;
+  const fill = document.getElementById('upProgFill'); if (fill) fill.style.width = pct + '%';
+  const txt  = document.getElementById('upProgTxt');  if (txt)  txt.textContent  = msg;
+  const stat = document.getElementById('statusTxt');  if (stat) stat.textContent = msg;
 }
+
 
 async function fetchFromSupabase() {
   RECORDS = []; SKU_MASTER = {};
-  setUpProgress(10, 'Fetching from Supabase…');
+  setUpProgress(10, 'Fetching data…');
   const dot = document.getElementById('statusDot');
   if (dot) dot.className = 'dot loading';
   try {
@@ -648,7 +586,7 @@ async function fetchFromSupabase() {
     while (true) {
       const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=platform,sku,sku_name,date,units&order=date.asc&offset=${from}&limit=${PAGE}`;
       const res = await fetch(url, { headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` } });
-      if (!res.ok) throw new Error(`Supabase ${res.status}`);
+      if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
       const rows = await res.json();
       if (!rows.length) break;
       rows.forEach(r => {
@@ -656,193 +594,56 @@ async function fetchFromSupabase() {
         RECORDS.push({ p: r.platform, s: r.sku, d: r.date, u: Math.round(r.units) });
         if (r.sku_name && !SKU_MASTER[r.sku]) SKU_MASTER[r.sku] = r.sku_name;
       });
-      setUpProgress(Math.min(10 + Math.round((RECORDS.length / 50000) * 80), 90), `Loading… ${RECORDS.length.toLocaleString()} rows`);
+      setUpProgress(Math.min(10 + Math.round((RECORDS.length/50000)*80), 90), `Loading… ${RECORDS.length.toLocaleString()} rows`);
       if (rows.length < PAGE) break;
       from += PAGE;
     }
     if (!RECORDS.length) throw new Error('No data found. Has the GitHub Action run?');
     setUpProgress(100, 'Done!');
-    document.getElementById('loadingScreen').classList.add('hidden');
+    // Hide loading screen
+    const ls = document.getElementById('loadingScreen');
+    if (ls) ls.classList.add('hidden');
+    if (dot) dot.className = 'dot';
+    // Show buttons
     const sb = document.getElementById('syncBtn'); if (sb) sb.style.display = 'inline-flex';
     const rb = document.getElementById('reloadBtn'); if (rb) rb.style.display = 'inline-flex';
-    if (dot) dot.className = 'dot';
+    // Init dashboard
     initDashboard();
   } catch(e) {
     setUpProgress(0, `Error: ${e.message}`);
-    const t = document.getElementById('upProgTxt'); if(t) t.style.color = 'var(--red)';
-    console.error(e);
+    const t = document.getElementById('upProgTxt'); if (t) t.style.color = 'var(--red)';
+    console.error('Supabase fetch error:', e);
   }
 }
 
-// Apply saved theme
-(function(){
-  if (localStorage.getItem('drr_theme') === 'dark') {
-    document.body.classList.add('dark');
-    document.addEventListener('DOMContentLoaded', () => {
-      const i = document.getElementById('themeIcon'); if(i) i.textContent = '☀️';
-      const l = document.getElementById('themeLabel'); if(l) l.textContent = 'Light';
-    });
-  }
-})();
-</script>
-<script>
-// ─────────────────────────────────────────────
-// CONSTANTS
-// ─────────────────────────────────────────────
-const PCOLORS = {
-  Amazon:'#E8710A', Flipkart:'#2874F0', Myntra:'#FF3F6C',
-  Nykaa:'#FC2779', Swiggy:'#FC8019', Zepto:'#8025FA',
-  Blinkit:'#F8C200', Meesho:'#9C27B0', Website:'#1A73E8'
-};
-function getChartDefaults() {
-  const isDark = document.body.classList.contains('dark');
-  const tick = isDark ? '#9aa0b0' : '#6b7280';
-  const grid = isDark ? '#2a2d3a' : '#f0f0f0';
-  return {
-    responsive:true, maintainAspectRatio:false,
-    plugins:{legend:{labels:{color:tick,font:{family:'DM Sans',size:10},boxWidth:10,padding:12}}},
-    scales:{
-      x:{ticks:{color:tick,font:{family:'DM Sans',size:9},maxRotation:45},grid:{color:grid}},
-      y:{ticks:{color:tick,font:{family:'DM Sans',size:9}},grid:{color:grid}}
-    }
-  };
-}
-const CHART_DEFAULTS = getChartDefaults();
-
-// ─────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────
-let filtered = [];
-let activeTab = 'allskus';
-let hmMonth = '';
-let drillSKU = '';
-let pfSelected = '';
-let sortSt = {};
-let charts = {};
-
-// ─────────────────────────────────────────────
-// PLATFORM PARSE CONFIG
-// ─────────────────────────────────────────────
-const DATE_FILTER_FROM = '2025-11-01';
-const PLATFORM_CONFIGS = {
-  'Amazon':   { skuCol: 0, dataStartCol: 3 },
-  'Flipkart': { skuCol: 0, dataStartCol: 4 },
-  'Myntra':   { skuCol: 0, dataStartCol: 4 },
-  'Nykaa':    { skuCol: 0, dataStartCol: 3 },
-  'Swiggy':   { skuCol: 0, dataStartCol: 3 },
-  'Blinkit':  { skuCol: 0, dataStartCol: 4 },
-  'Meesho':   { skuCol: 0, dataStartCol: 2 },
-  'Website':  { skuCol: 0, dataStartCol: 4 },
-  'Zepto':    { skuCol: 0, dataStartCol: 3, aggregate: true },
-};
-
-// ─────────────────────────────────────────────
-// SUPABASE FETCH
-// ─────────────────────────────────────────────
-function reloadDashboard() { location.reload(); }
-
-// Sync trigger — calls Cloudflare Worker which holds the token securely
-const WORKER_URL = 'https://cc-drr-sync.sherin-vadayi-suresh.workers.dev';
-
-async function triggerSync() {
-  const btn    = document.getElementById('syncBtn');
-  const status = document.getElementById('syncStatus');
-  if (btn.classList.contains('running')) return;
-
-  btn.classList.add('running');
-  btn.textContent = '⟳ Syncing…';
-  status.textContent = 'Triggering sync…';
-  status.style.color = 'var(--teal)';
-
-  try {
-    const res = await fetch(WORKER_URL, { method: 'POST' });
-    const data = await res.json();
-
-    if (data.ok) {
-      status.textContent = '✓ Sync started — refreshing in 90s';
-      status.style.color = 'var(--green)';
-      btn.textContent = '⟳ Running…';
-      setTimeout(() => {
-        status.textContent = 'Reloading…';
-        setTimeout(() => location.reload(), 2000);
-      }, 90000);
-    } else {
-      throw new Error(data.error || 'Unknown error');
-    }
-  } catch(e) {
-    status.textContent = '✗ ' + e.message;
-    status.style.color = 'var(--red)';
-    btn.classList.remove('running');
-    btn.textContent = '⟳ Sync Now';
-  }
-}
 
 function toggleTheme() {
-  const isLight = document.body.classList.toggle('light');
-  document.getElementById('toggleThumb').textContent  = isLight ? '🌙' : '☀';
-  document.getElementById('toggleLabel').textContent  = isLight ? 'Dark' : 'Light';
-  localStorage.setItem('drr_theme', isLight ? 'light' : 'dark');
-  // Redraw charts so they pick up new CSS vars
+  const isDark = document.body.classList.toggle('dark');
+  const icon  = document.getElementById('themeIcon');  if (icon)  icon.textContent  = isDark ? '☀️' : '🌙';
+  const label = document.getElementById('themeLabel'); if (label) label.textContent = isDark ? 'Light' : 'Dark';
+  localStorage.setItem('drr_theme', isDark ? 'dark' : 'light');
   Object.values(charts).forEach(c => { if (c) c.update(); });
 }
 
-// Apply saved theme on load
-(function() {
-  if (localStorage.getItem('drr_theme') === 'light') {
-    document.body.classList.add('light');
-    document.addEventListener('DOMContentLoaded', () => {
-      const thumb = document.getElementById('toggleThumb');
-      const label = document.getElementById('toggleLabel');
-      if (thumb) thumb.textContent = '🌙';
-      if (label) label.textContent = 'Dark';
-    });
-  }
-})();
 
-function setUpProgress(pct, msg) {
-  const fill = document.getElementById('upProgFill');
-  const txt  = document.getElementById('upProgTxt');
-  const stat = document.getElementById('statusTxt');
-  if (fill) fill.style.width = pct + '%';
-  if (txt)  txt.textContent  = msg;
-  if (stat) stat.textContent = msg;
-}
-
-async function fetchFromSupabase() {
-  RECORDS    = [];
-  SKU_MASTER = {};
-  setUpProgress(10, 'Fetching from Supabase…');
-
+const WORKER_URL = 'https://cc-drr-sync.sherin-vadayi-suresh.workers.dev';
+async function triggerSync() {
+  const btn    = document.getElementById('syncBtn');
+  const status = document.getElementById('syncStatus');
+  if (!btn || btn.classList.contains('running')) return;
+  btn.classList.add('running'); btn.textContent = '⟳ Syncing…';
+  status.textContent = 'Triggering sync…'; status.style.color = 'var(--teal)';
   try {
-    let from = 0;
-    const PAGE = 1000;
-    while (true) {
-      const url = `${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?select=platform,sku,sku_name,date,units&order=date.asc&offset=${from}&limit=${PAGE}`;
-      const res = await fetch(url, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-      });
-      if (!res.ok) throw new Error(`Supabase ${res.status}: ${await res.text()}`);
-      const rows = await res.json();
-      if (!rows.length) break;
-      rows.forEach(r => {
-        if (!r.platform || !r.sku || !r.date || !r.units) return;
-        RECORDS.push({ p: r.platform, s: r.sku, d: r.date, u: Math.round(r.units) });
-        if (r.sku_name && !SKU_MASTER[r.sku]) SKU_MASTER[r.sku] = r.sku_name;
-      });
-      const pct = Math.min(10 + Math.round((RECORDS.length / 50000) * 80), 90);
-      setUpProgress(pct, `Loading… ${RECORDS.length.toLocaleString()} rows`);
-      if (rows.length < PAGE) break;
-      from += PAGE;
-    }
-    if (!RECORDS.length) throw new Error('No data in Supabase yet. Has the GitHub Action run?');
-    setUpProgress(100, 'Done!');
-    const us = document.getElementById('uploadScreen'); if(us) us.classList.add('hidden');
-    const rb = document.getElementById('reloadBtn'); if(rb) rb.style.display = 'inline-flex';
-    initDashboard();
+    const res = await fetch(WORKER_URL, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      status.textContent = '✓ Sync started — refreshing in 90s'; status.style.color = 'var(--green)';
+      btn.textContent = '⟳ Running…';
+      setTimeout(() => { status.textContent = 'Reloading…'; setTimeout(() => location.reload(), 2000); }, 90000);
+    } else { throw new Error(data.error || 'Unknown'); }
   } catch(e) {
-    setUpProgress(0, `Error: ${e.message}`);
-    document.getElementById('upProgTxt').style.color = 'var(--red)';
-    console.error(e);
+    status.textContent = '✗ ' + e.message; status.style.color = 'var(--red)';
+    btn.classList.remove('running'); btn.textContent = '⟳ Sync Now';
   }
 }
 
@@ -1407,9 +1208,8 @@ function renderLatestDRRTable() {
 // ─────────────────────────────────────────────
 // START
 // ─────────────────────────────────────────────
-fetchFromSupabase();
 
-// dot class updated inline in fetchFromSupabase
+fetchFromSupabase();
 </script>
 </body>
 </html>
