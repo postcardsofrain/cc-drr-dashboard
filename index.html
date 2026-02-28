@@ -2,289 +2,152 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Conscious Chemist — DRR</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-/* ════════════════════════════════════════════
-   DESIGN TOKENS
-════════════════════════════════════════════ */
+/* ── TOKENS ── */
 :root {
-  /* Palette — #5347CE #887CFD #4896FE #16C8C7 */
-  --primary:     #5347CE;
-  --primary-lt:  #eeecfb;
-  --primary-md:  #c5c2f0;
-  --violet:      #887CFD;
-  --violet-lt:   #f0effe;
-  --blue:        #4896FE;
-  --blue-lt:     #e8f3ff;
-  --teal:        #16C8C7;
-  --teal-lt:     #e4fafa;
-
-  /* Base */
-  --bg:          #f4f5fb;
-  --surface:     #ffffff;
-  --surface2:    #eeedf8;
-  --border:      #e2e1f0;
-  --border2:     #cecceb;
-
-  /* Text */
-  --text:        #1a1830;
-  --text2:       #58567a;
-  --text3:       #9694b8;
-
-  /* Alias for components */
-  --indigo:      #5347CE;
-  --indigo-lt:   #eeecfb;
-  --indigo-md:   #c5c2f0;
-
-  /* Semantic */
-  --green:       #12b76a;
-  --green-bg:    #ecfdf5;
-  --red:         #f04438;
-  --red-bg:      #fef3f2;
-  --amber:       #f79009;
-  --amber-bg:    #fffaeb;
-
-  /* KPI cards — each uses one palette colour */
-  --kpi1: #5347CE; --kpi1-bg: #eeecfb;
-  --kpi2: #16C8C7; --kpi2-bg: #e4fafa;
-  --kpi3: #4896FE; --kpi3-bg: #e8f3ff;
-  --kpi4: #887CFD; --kpi4-bg: #f0effe;
-  --kpi5: #5347CE; --kpi5-bg: #eeecfb;
-
-  /* Elevation */
-  --shadow-xs:  0 1px 2px rgba(83,71,206,.06);
-  --shadow-sm:  0 1px 3px rgba(83,71,206,.10), 0 1px 2px rgba(83,71,206,.04);
-  --shadow-md:  0 4px 12px rgba(83,71,206,.12), 0 2px 4px rgba(83,71,206,.06);
-
-  --radius-sm:  8px;
-  --radius:     12px;
-  --radius-lg:  16px;
-
-  --font:       'Plus Jakarta Sans', sans-serif;
-  --mono:       'DM Mono', monospace;
+  --bg:#f4f5fb; --surface:#fff; --surface2:#eeedf8; --border:#e2e1f0; --border2:#cecceb;
+  --text:#1a1830; --text2:#58567a; --text3:#9694b8;
+  --pri:#5347CE; --pri-lt:#eeecfb; --pri-md:#c5c2f0;
+  --violet:#887CFD; --violet-lt:#f0effe;
+  --blue:#4896FE; --blue-lt:#e8f3ff;
+  --teal:#16C8C7; --teal-lt:#e4fafa;
+  --green:#12b76a; --green-bg:#ecfdf5;
+  --red:#f04438; --red-bg:#fef3f2;
+  --amber:#f79009; --amber-bg:#fffaeb;
+  --sh-xs:0 1px 2px rgba(83,71,206,.06);
+  --sh-sm:0 1px 3px rgba(83,71,206,.10),0 1px 2px rgba(83,71,206,.04);
+  --sh-md:0 4px 12px rgba(83,71,206,.12),0 2px 4px rgba(83,71,206,.06);
+  --r:12px; --r-sm:8px;
+  --font:'Plus Jakarta Sans',sans-serif; --mono:'DM Mono',monospace;
 }
-
 body.dark {
-  --primary:     #7b72e0;
-  --primary-lt:  #1e1c3a;
-  --primary-md:  #2e2a58;
-  --violet:      #9f95fd;
-  --violet-lt:   #1a1830;
-  --blue:        #6aabfe;
-  --blue-lt:     #0d1e35;
-  --teal:        #2de0df;
-  --teal-lt:     #0a2525;
-
-  --bg:          #13121f;
-  --surface:     #1c1b2e;
-  --surface2:    #232238;
-  --border:      #2e2c4a;
-  --border2:     #3d3b60;
-  --text:        #e8e6ff;
-  --text2:       #9490c0;
-  --text3:       #5c5880;
-
-  --indigo:      #7b72e0;
-  --indigo-lt:   #1e1c3a;
-  --indigo-md:   #2e2a58;
-
-  --green:       #32d583;
-  --green-bg:    #0d2b1f;
-  --red:         #f97066;
-  --red-bg:      #2b1212;
-  --amber:       #fdb022;
-  --amber-bg:    #2b1f06;
-
-  --kpi1: #7b72e0; --kpi1-bg: #1e1c3a;
-  --kpi2: #2de0df; --kpi2-bg: #0a2525;
-  --kpi3: #6aabfe; --kpi3-bg: #0d1e35;
-  --kpi4: #9f95fd; --kpi4-bg: #1a1830;
-  --kpi5: #7b72e0; --kpi5-bg: #1e1c3a;
-
-  --shadow-xs:  0 1px 2px rgba(0,0,0,.3);
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.35);
-  --shadow-md:  0 4px 12px rgba(0,0,0,.45);
+  --bg:#13121f; --surface:#1c1b2e; --surface2:#232238; --border:#2e2c4a; --border2:#3d3b60;
+  --text:#e8e6ff; --text2:#9490c0; --text3:#5c5880;
+  --pri:#7b72e0; --pri-lt:#1e1c3a; --pri-md:#2e2a58;
+  --violet:#9f95fd; --violet-lt:#1a1830;
+  --blue:#6aabfe; --blue-lt:#0d1e35;
+  --teal:#2de0df; --teal-lt:#0a2525;
+  --green:#32d583; --green-bg:#0d2b1f;
+  --red:#f97066; --red-bg:#2b1212;
+  --amber:#fdb022; --amber-bg:#2b1f06;
+  --sh-xs:0 1px 2px rgba(0,0,0,.3);
+  --sh-sm:0 1px 3px rgba(0,0,0,.35);
+  --sh-md:0 4px 12px rgba(0,0,0,.45);
 }
 
-/* ════════════════════════════════════════════ RESET */
+/* ── RESET ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;min-height:100vh}
 button{font-family:var(--font);cursor:pointer;border:none;background:none}
 
-/* ════════════════════════════════════════════ HEADER */
-.header{
-  display:flex;align-items:center;gap:12px;
-  padding:0 28px;height:60px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:200;
-  box-shadow:var(--shadow-xs);
-}
-.logo{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.02em;white-space:nowrap}
-.logo span{color:var(--primary)}
-.header-right{display:flex;align-items:center;gap:8px;margin-left:auto}
-
-/* Theme pill */
-.theme-pill{
-  display:flex;align-items:center;gap:6px;padding:5px 12px;
-  border-radius:20px;border:1px solid var(--border);background:var(--surface2);
-  color:var(--text2);font-size:12.5px;font-weight:500;cursor:pointer;
-  transition:all .15s;user-select:none;
-}
-.theme-pill:hover{border-color:var(--indigo);color:var(--indigo)}
-
-/* Status */
-.status-wrap{
-  display:flex;align-items:center;gap:6px;padding:5px 12px;
-  border-radius:20px;background:var(--surface2);border:1px solid var(--border);
-  font-size:12px;color:var(--text2);white-space:nowrap;
-}
+/* ── HEADER ── */
+.hdr{display:flex;align-items:center;gap:12px;padding:0 24px;height:56px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;box-shadow:var(--sh-xs)}
+.logo{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.logo span{color:var(--pri)}
+.hdr-r{display:flex;align-items:center;gap:8px;margin-left:auto}
+.theme-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text2);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none}
+.theme-pill:hover{border-color:var(--pri);color:var(--pri)}
+.status-wrap{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;background:var(--surface2);border:1px solid var(--border);font-size:12px;color:var(--text2)}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
-.dot.loading{background:var(--amber);animation:blink .9s infinite}
+.dot.spin{background:var(--amber);animation:blink .9s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-
-/* Buttons */
-.btn{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:6px 14px;border-radius:var(--radius-sm);
-  font-size:13px;font-weight:500;border:1px solid var(--border);
-  background:var(--surface);color:var(--text2);transition:all .15s;
-}
-.btn:hover{border-color:var(--indigo);color:var(--indigo);background:var(--indigo-lt)}
-.btn.accent{background:linear-gradient(135deg,var(--primary),var(--violet));color:#fff;border-color:var(--primary)}
-.btn.accent:hover{opacity:.9}
-.btn.running{opacity:.5;cursor:not-allowed}
+.hdr-btn{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:var(--r-sm);font-size:13px;font-weight:500;border:1px solid var(--border);background:var(--surface);color:var(--text2);transition:all .15s}
+.hdr-btn:hover{border-color:var(--pri);color:var(--pri);background:var(--pri-lt)}
+.hdr-btn.acc{background:linear-gradient(135deg,var(--pri),var(--violet));color:#fff;border-color:var(--pri)}
+.hdr-btn.acc:hover{opacity:.9}
+.hdr-btn.running{opacity:.5;cursor:not-allowed}
 .sync-msg{font-size:11.5px;color:var(--text3)}
 
-/* ════════════════════════════════════════════ FILTER BAR */
-.filters{
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  padding:10px 28px;background:var(--surface);
-  border-bottom:1px solid var(--border);
-}
+/* ── FILTERS ── */
+.filters{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 24px;background:var(--surface);border-bottom:1px solid var(--border)}
 .fl{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em}
-.filter-group{display:flex;align-items:center;gap:6px}
-select,input[type=date]{
-  background:var(--surface2);border:1px solid var(--border);
-  color:var(--text);font-family:var(--font);font-size:13px;
-  padding:6px 10px;border-radius:var(--radius-sm);outline:none;cursor:pointer;
-  transition:border-color .15s;
-}
-select:hover,input[type=date]:hover,select:focus,input[type=date]:focus{border-color:var(--indigo)}
-.btn-reset{
-  padding:6px 12px;border-radius:var(--radius-sm);font-size:13px;font-weight:500;
-  border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;
-  transition:all .15s;
-}
-.btn-reset:hover{border-color:var(--red);color:var(--red)}
-.row-count{margin-left:auto;font-size:12px;color:var(--text3)}
+.fg{display:flex;align-items:center;gap:6px}
+select,input[type=date]{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13px;padding:6px 10px;border-radius:var(--r-sm);outline:none;cursor:pointer;transition:border-color .15s}
+select:hover,input[type=date]:hover,select:focus,input[type=date]:focus{border-color:var(--pri)}
+.btn-rst{padding:6px 12px;border-radius:var(--r-sm);font-size:13px;font-weight:500;border:1px solid var(--border);background:transparent;color:var(--text2);cursor:pointer;transition:all .15s}
+.btn-rst:hover{border-color:var(--red);color:var(--red)}
+.rowct{margin-left:auto;font-size:12px;color:var(--text3)}
 
-/* ════════════════════════════════════════════ TABS */
-.tabs{
-  display:flex;background:var(--surface);
-  border-bottom:1px solid var(--border);
-  padding:0 28px;overflow-x:auto;gap:2px;
-}
-.tab{
-  padding:13px 16px;font-size:13.5px;font-weight:500;
-  color:var(--text2);background:none;border:none;
-  border-bottom:2px solid transparent;cursor:pointer;
-  transition:all .15s;white-space:nowrap;
-}
+/* ── TABS ── */
+.tabs{display:flex;background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;overflow-x:auto;gap:2px}
+.tab{padding:13px 16px;font-size:13.5px;font-weight:500;color:var(--text2);background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
 .tab:hover{color:var(--text)}
-.tab.active{color:var(--primary);border-bottom-color:var(--primary);font-weight:600}
+.tab.active{color:var(--pri);border-bottom-color:var(--pri);font-weight:600}
 
-/* ════════════════════════════════════════════ PANES */
-.pane{display:none;padding:24px 28px;animation:fadeUp .18s ease}
+/* ── PANES ── */
+.pane{display:none;padding:24px;animation:fadeUp .18s ease}
 .pane.active{display:block}
 @keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 
-/* ════════════════════════════════════════════ KPI CARDS */
+/* ── KPI CARDS ── */
 .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px}
-.kpi-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:20px 22px;
-  box-shadow:var(--shadow-sm);transition:box-shadow .2s,transform .2s;
-  position:relative;overflow:hidden;
-}
-.kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;box-shadow:var(--sh-sm);transition:box-shadow .2s,transform .2s;position:relative;overflow:hidden}
+.kpi-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
 .kpi-label{font-size:11.5px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px}
 .kpi-val{font-size:30px;font-weight:700;line-height:1;letter-spacing:-.02em}
 .kpi-sub{font-size:12px;color:var(--text3);margin-top:6px}
-.kpi-card:nth-child(1) .kpi-val{color:var(--kpi1)}
-.kpi-card:nth-child(2) .kpi-val{color:var(--kpi2)}
-.kpi-card:nth-child(3) .kpi-val{color:var(--kpi3)}
-.kpi-card:nth-child(4) .kpi-val{color:var(--kpi4)}
-.kpi-card:nth-child(5) .kpi-val{color:var(--kpi5)}
-.kpi-card::after{
-  content:'';position:absolute;top:0;right:0;
-  width:64px;height:64px;border-radius:0 var(--radius) 0 100%;
-  opacity:.06;
-}
-.kpi-card:nth-child(1)::after{background:var(--kpi1)}
-.kpi-card:nth-child(2)::after{background:var(--kpi2)}
-.kpi-card:nth-child(3)::after{background:var(--kpi3)}
-.kpi-card:nth-child(4)::after{background:var(--kpi4)}
-.kpi-card:nth-child(5)::after{background:var(--kpi5)}
+.kpi-card:nth-child(1) .kpi-val{color:var(--pri)}
+.kpi-card:nth-child(2) .kpi-val{color:var(--teal)}
+.kpi-card:nth-child(3) .kpi-val{color:var(--blue)}
+.kpi-card:nth-child(4) .kpi-val{color:var(--violet)}
+.kpi-card:nth-child(5) .kpi-val{color:var(--pri)}
 
-/* ════════════════════════════════════════════ SECTION HEADER */
-.sec-head{
-  font-size:12px;font-weight:600;color:var(--text2);
-  text-transform:uppercase;letter-spacing:.08em;
-  margin-bottom:14px;padding-bottom:10px;
-  border-bottom:1px solid var(--border);
-}
+/* ── SECTION TITLE ── */
+.sec-head{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
 
-/* ════════════════════════════════════════════ TABLE */
-.t-wrap{overflow-x:auto;border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);margin-bottom:24px;background:var(--surface)}
+/* ── TABLE ── */
+.t-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border);box-shadow:var(--sh-sm);margin-bottom:24px;background:var(--surface)}
 table{width:100%;border-collapse:collapse;font-size:13.5px}
 thead tr{background:var(--surface2)}
-th{
-  padding:12px 16px;text-align:left;font-size:11px;font-weight:600;
-  color:var(--text3);text-transform:uppercase;letter-spacing:.07em;
-  border-bottom:1px solid var(--border);white-space:nowrap;
-  cursor:pointer;user-select:none;
-}
-th:hover{color:var(--indigo)}
+th{padding:12px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--pri)}
 td{padding:13px 16px;border-bottom:1px solid var(--border);color:var(--text)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--surface2)}
-.chip{
-  display:inline-flex;align-items:center;padding:3px 8px;
-  border-radius:6px;font-size:11.5px;font-weight:600;
-  font-family:var(--mono);background:var(--violet-lt);color:var(--violet);
-}
+.chip{display:inline-flex;align-items:center;padding:3px 8px;border-radius:6px;font-size:11.5px;font-weight:600;font-family:var(--mono);background:var(--violet-lt);color:var(--violet)}
 .bar-wrap{display:flex;align-items:center;gap:8px}
 .mini-bar{width:56px;height:4px;background:var(--border);border-radius:2px;flex-shrink:0}
 .mini-bar-fill{height:100%;border-radius:2px;background:var(--teal)}
+.delta-up{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;background:var(--green-bg);color:var(--green);font-size:12px;font-weight:600}
+.delta-dn{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;background:var(--red-bg);color:var(--red);font-size:12px;font-weight:600}
+.delta-flat{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text3);font-size:12px}
+/* legacy compat */
 .up{color:var(--green);font-weight:600;font-size:12.5px}
 .dn{color:var(--red);font-weight:600;font-size:12.5px}
 .flat{color:var(--text3);font-size:12.5px}
+.kdelta{font-size:12px;font-weight:600}
+.kdelta.up{color:var(--green)}
+.kdelta.dn{color:var(--red)}
+.kdelta.flat{color:var(--text3);font-weight:400}
 
-/* ════════════════════════════════════════════ CHART CARDS */
+/* ── CHARTS ── */
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
 .chart-grid.three{grid-template-columns:1fr 1fr 1fr}
-.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow-sm)}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px 22px;box-shadow:var(--sh-sm)}
 .chart-card.full{grid-column:1/-1}
 .chart-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
 .chart-sub{font-size:12px;color:var(--text3);margin-bottom:16px}
 .chart-wrap{position:relative;height:240px}
 .chart-wrap.tall{height:300px}
 .chart-wrap.short{height:180px}
+/* legacy */
+.ccard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:20px;box-shadow:var(--sh-sm)}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.cgrid.three{grid-template-columns:1fr 1fr 1fr}
+.ctitle{font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px}
+.cwrap{position:relative;height:240px}
+.cwrap.tall{height:300px}
 
-/* ════════════════════════════════════════════ HEATMAP */
+/* ── HEATMAP ── */
 .hm-pills{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
-.pill{
-  padding:5px 14px;border-radius:20px;border:1px solid var(--border);
-  font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;
-  background:var(--surface);color:var(--text2);
-}
-.pill:hover{border-color:var(--indigo);color:var(--indigo)}
-.pill.active{background:var(--indigo);border-color:var(--indigo);color:#fff}
-.hm-wrap{overflow-x:auto;border-radius:var(--radius-sm);border:1px solid var(--border)}
+.pill{padding:5px 14px;border-radius:20px;border:1px solid var(--border);font-size:12.5px;font-weight:500;cursor:pointer;transition:all .15s;background:var(--surface);color:var(--text2)}
+.pill:hover{border-color:var(--pri);color:var(--pri)}
+.pill.active{background:var(--pri);border-color:var(--pri);color:#fff}
+.hm-wrap{overflow-x:auto;border-radius:var(--r-sm);border:1px solid var(--border)}
 .hm-table{border-collapse:collapse;font-size:10.5px;white-space:nowrap}
 .hm-table th{padding:5px 8px;color:var(--text3);font-weight:500;text-align:center;position:sticky;top:0;background:var(--surface);font-size:10px}
 .hm-table th.sku-h{text-align:left;min-width:130px;position:sticky;left:0;background:var(--surface);z-index:10}
@@ -293,127 +156,90 @@ tr:hover td{background:var(--surface2)}
 .hm-legend{display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11px;color:var(--text3)}
 .lsw{width:16px;height:7px;border-radius:2px}
 
-/* ════════════════════════════════════════════ DRILL DOWN */
+/* ── DRILL DOWN ── */
 .drill-layout{display:flex;gap:14px;margin-bottom:20px;flex-wrap:wrap}
 .drill-search-box{flex:1;min-width:240px;position:relative}
-.drill-search-box input{
-  width:100%;background:var(--surface);border:1px solid var(--border);
-  color:var(--text);font-family:var(--font);font-size:13.5px;
-  padding:10px 14px 10px 38px;border-radius:var(--radius-sm);outline:none;transition:border-color .15s;
-}
-.drill-search-box input:focus{border-color:var(--indigo)}
+.drill-search-box input{width:100%;background:var(--surface);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:13.5px;padding:10px 14px 10px 38px;border-radius:var(--r-sm);outline:none;transition:border-color .15s}
+.drill-search-box input:focus{border-color:var(--pri)}
 .drill-search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:14px;pointer-events:none}
-.drill-list{
-  flex:1;min-width:240px;max-height:260px;overflow-y:auto;
-  border:1px solid var(--border);border-radius:var(--radius-sm);
-  background:var(--surface);box-shadow:var(--shadow-sm);
-}
+.drill-list{flex:1;min-width:240px;max-height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);box-shadow:var(--sh-sm)}
 .drill-list::-webkit-scrollbar{width:4px}
 .drill-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-.drill-item{
-  padding:10px 14px;cursor:pointer;transition:background .1s;
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;
-}
+.drill-item{padding:10px 14px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .drill-item:last-child{border-bottom:none}
 .drill-item:hover{background:var(--surface2)}
-.drill-item.active{background:var(--primary-lt);border-left:3px solid var(--primary)}
+.drill-item.active{background:var(--pri-lt);border-left:3px solid var(--pri)}
 .drill-item-left{display:flex;flex-direction:column;gap:2px;overflow:hidden}
-.drill-code{font-size:11px;font-weight:600;color:var(--primary);font-family:var(--mono)}
+.drill-code{font-size:11px;font-weight:600;color:var(--pri);font-family:var(--mono)}
 .drill-name{font-size:12.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .drill-units{font-size:12px;color:var(--text3);flex-shrink:0}
 
-/* ════════════════════════════════════════════ PLATFORM CARDS */
+/* ── PLATFORM CARDS ── */
 .pf-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:20px}
-.pf-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:16px;text-align:center;
-  cursor:pointer;transition:all .15s;box-shadow:var(--shadow-sm);
-}
-.pf-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
-.pf-card.active{border-color:var(--primary);background:var(--primary-lt)}
+.pf-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;cursor:pointer;transition:all .15s;box-shadow:var(--sh-sm)}
+.pf-card:hover{box-shadow:var(--sh-md);transform:translateY(-2px)}
+.pf-card.active{border-color:var(--pri);background:var(--pri-lt)}
 .pf-name{font-size:12.5px;font-weight:600;color:var(--text);margin-bottom:8px}
 .pf-units{font-size:22px;font-weight:700;letter-spacing:-.02em}
 .pf-share{font-size:11px;color:var(--text3);margin-top:4px}
 
-/* ════════════════════════════════════════════ LATEST DRR */
+/* ── LATEST DRR ── */
 .ldrr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:24px}
-.ldrr-card{
-  background:var(--surface);border:1px solid var(--border);
-  border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow-sm);
-  border-top:3px solid var(--border);transition:box-shadow .15s;
-}
-.ldrr-card:hover{box-shadow:var(--shadow-md)}
+.ldrr-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px;box-shadow:var(--sh-sm);border-top:3px solid var(--border);transition:box-shadow .15s}
+.ldrr-card:hover{box-shadow:var(--sh-md)}
 .ldrr-platform{font-size:12.5px;font-weight:600;color:var(--text2);margin-bottom:10px}
 .ldrr-units{font-size:28px;font-weight:700;letter-spacing:-.02em;color:var(--text)}
 .ldrr-date{font-size:11.5px;color:var(--text3);margin-top:6px;display:flex;align-items:center;gap:5px}
 .fresh-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .ldrr-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
 .ldrr-skus{font-size:11.5px;color:var(--text3)}
+.staleness-fresh{background:var(--green)}
+.staleness-warn{background:var(--amber)}
+.staleness-stale{background:var(--red)}
 
-/* Delta badges */
-.delta-up{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;background:var(--green-bg);color:var(--green);font-size:12px;font-weight:600}
-.delta-dn{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;background:var(--red-bg);color:var(--red);font-size:12px;font-weight:600}
-.delta-flat{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:20px;background:var(--surface2);color:var(--text3);font-size:12px}
-
-/* ════════════════════════════════════════════ LOADING */
-#loadingScreen{
-  position:fixed;inset:0;background:var(--bg);z-index:9999;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;
-}
+/* ── LOADING ── */
+#loadingScreen{position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}
 #loadingScreen.hidden{display:none}
 .ld-logo{font-size:20px;font-weight:700;color:var(--text);margin-bottom:36px}
-.ld-logo span{color:var(--indigo)}
+.ld-logo span{color:var(--pri)}
 .ld-bar-bg{width:260px;height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:12px}
 .ld-bar{height:100%;background:linear-gradient(90deg,#5347CE,#887CFD,#4896FE,#16C8C7);border-radius:2px;transition:width .3s ease;width:0%}
 .ld-txt{font-size:13px;color:var(--text3)}
-
-/* ════════════════════════════════════════════ EMPTY */
 .empty{color:var(--text3);font-size:13px;text-align:center;padding:48px}
-
-/* ════════════════════════════════════════════ RESPONSIVE */
-@media(max-width:768px){
-  .chart-grid,.chart-grid.three{grid-template-columns:1fr}
-  .header,.filters,.tabs,.pane{padding-left:16px;padding-right:16px}
-  .kpi-grid{grid-template-columns:repeat(2,1fr)}
-}
+@media(max-width:768px){.chart-grid,.chart-grid.three,.cgrid,.cgrid.three{grid-template-columns:1fr}.hdr,.filters,.tabs,.pane{padding-left:14px;padding-right:14px}.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header class="header">
+<header class="hdr">
   <div class="logo">Conscious Chemist <span>DRR</span></div>
-  <div class="header-right">
+  <div class="hdr-r">
     <div class="theme-pill" onclick="toggleTheme()">
-      <span id="themeIcon">🌙</span>
-      <span id="themeLabel">Dark</span>
+      <span id="themeIcon">🌙</span><span id="themeLabel">Dark</span>
     </div>
-    <button class="btn" id="reloadBtn" onclick="location.reload()" style="display:none">↑ Reload</button>
-    <button class="btn accent" id="syncBtn" onclick="triggerSync()" style="display:none">⟳ Sync Now</button>
+    <button class="hdr-btn" id="reloadBtn" onclick="location.reload()" style="display:none">↑ Reload</button>
+    <button class="hdr-btn acc" id="syncBtn" onclick="triggerSync()" style="display:none">⟳ Sync Now</button>
     <span class="sync-msg" id="syncStatus"></span>
     <div class="status-wrap">
-      <div class="dot loading" id="statusDot"></div>
+      <div class="dot spin" id="statusDot"></div>
       <span id="statusTxt">Loading…</span>
     </div>
   </div>
 </header>
 
-<!-- FILTERS -->
 <div class="filters">
-  <div class="filter-group"><span class="fl">From</span><input type="date" id="fFrom"></div>
-  <div class="filter-group"><span class="fl">To</span><input type="date" id="fTo"></div>
-  <div class="filter-group"><span class="fl">Platform</span>
+  <div class="fg"><span class="fl">From</span><input type="date" id="fFrom"></div>
+  <div class="fg"><span class="fl">To</span><input type="date" id="fTo"></div>
+  <div class="fg"><span class="fl">Platform</span>
     <select id="fPlat"><option value="">All Platforms</option></select>
   </div>
-  <div class="filter-group"><span class="fl">SKU</span>
+  <div class="fg"><span class="fl">SKU</span>
     <select id="fSKU"><option value="">All SKUs</option></select>
   </div>
-  <button class="btn-reset" onclick="resetFilters()">↺ Reset</button>
-  <span class="row-count" id="rowCount"></span>
+  <button class="btn-rst" onclick="resetFilters()">↺ Reset</button>
+  <span class="rowct" id="rowCount"></span>
 </div>
 
-<!-- TABS -->
 <nav class="tabs">
   <button class="tab active" onclick="goTab('allskus',this)">All SKUs</button>
   <button class="tab" onclick="goTab('heatmap',this)">Heat Map</button>
@@ -423,26 +249,22 @@ tr:hover td{background:var(--surface2)}
   <button class="tab" onclick="goTab('latestdrr',this)">Latest DRR</button>
 </nav>
 
-<!-- ALL SKUs -->
 <div class="pane active" id="pane-allskus">
   <div class="kpi-grid" id="kpiGrid"></div>
   <div class="sec-head">SKU Performance</div>
-  <div class="t-wrap">
-    <table id="tblSKU">
-      <thead><tr>
-        <th onclick="sortTbl('tblSKU',0)">SKU ↕</th>
-        <th onclick="sortTbl('tblSKU',1)">Product Name ↕</th>
-        <th onclick="sortTbl('tblSKU',2)">Total Units ↕</th>
-        <th onclick="sortTbl('tblSKU',3)">Platforms ↕</th>
-        <th onclick="sortTbl('tblSKU',4)">Daily Avg ↕</th>
-        <th onclick="sortTbl('tblSKU',5)">Share %</th>
-      </tr></thead>
-      <tbody id="tblSKUbody"></tbody>
-    </table>
-  </div>
+  <div class="t-wrap"><table id="tblSKU">
+    <thead><tr>
+      <th onclick="sortTbl('tblSKU',0)">SKU ↕</th>
+      <th onclick="sortTbl('tblSKU',1)">Product Name ↕</th>
+      <th onclick="sortTbl('tblSKU',2)">Total Units ↕</th>
+      <th onclick="sortTbl('tblSKU',3)">Platforms ↕</th>
+      <th onclick="sortTbl('tblSKU',4)">Daily Avg ↕</th>
+      <th onclick="sortTbl('tblSKU',5)">Share %</th>
+    </tr></thead>
+    <tbody id="tblSKUbody"></tbody>
+  </table></div>
 </div>
 
-<!-- HEAT MAP -->
 <div class="pane" id="pane-heatmap">
   <div class="sec-head">Units Heat Map — SKU × Day</div>
   <div class="hm-pills" id="hmPills"></div>
@@ -450,40 +272,20 @@ tr:hover td{background:var(--surface2)}
   <div class="hm-legend"><span>0</span><div style="display:flex;gap:2px" id="hmLegend"></div><span>Max</span></div>
 </div>
 
-<!-- MONTHLY -->
 <div class="pane" id="pane-monthly">
   <div class="chart-grid">
-    <div class="chart-card full">
-      <div class="chart-title">Monthly Units by Platform</div>
-      <div class="chart-sub">Stacked bar — all platforms</div>
-      <div class="chart-wrap tall"><canvas id="cMonthStack"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Month-over-Month Total</div>
-      <div class="chart-sub">Trend line</div>
-      <div class="chart-wrap"><canvas id="cMoM"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Platform Share % by Month</div>
-      <div class="chart-sub">Mix over time</div>
-      <div class="chart-wrap"><canvas id="cMix"></canvas></div>
-    </div>
+    <div class="chart-card full"><div class="chart-title">Monthly Units by Platform</div><div class="chart-sub">Stacked bar — all platforms</div><div class="chart-wrap tall"><canvas id="cMonthStack"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Month-over-Month Total</div><div class="chart-sub">Trend line</div><div class="chart-wrap"><canvas id="cMoM"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Platform Share % by Month</div><div class="chart-sub">Mix over time</div><div class="chart-wrap"><canvas id="cMix"></canvas></div></div>
   </div>
   <div class="sec-head">Monthly Summary</div>
-  <div class="t-wrap">
-    <table id="tblMonthly">
-      <thead><tr id="tblMonthlyHead"></tr></thead>
-      <tbody id="tblMonthlyBody"></tbody>
-    </table>
-  </div>
+  <div class="t-wrap"><table id="tblMonthly"><thead><tr id="tblMonthlyHead"></tr></thead><tbody id="tblMonthlyBody"></tbody></table></div>
 </div>
 
-<!-- DRILL DOWN -->
 <div class="pane" id="pane-drilldown">
   <div class="sec-head">SKU Drill-Down</div>
   <div class="drill-layout">
-    <div class="drill-search-box">
-      <span class="drill-search-icon">⌕</span>
+    <div class="drill-search-box"><span class="drill-search-icon">⌕</span>
       <input type="text" id="drillSearch" placeholder="Search by SKU or product name…" oninput="renderDrillList()">
     </div>
     <div class="drill-list" id="drillList"></div>
@@ -491,58 +293,39 @@ tr:hover td{background:var(--surface2)}
   <div id="drillContent"><div class="empty">Select a SKU from the list above</div></div>
 </div>
 
-<!-- PLATFORMS -->
 <div class="pane" id="pane-platforms">
   <div class="sec-head">Platform Overview</div>
   <div class="pf-grid" id="pfGrid"></div>
   <div class="chart-grid">
-    <div class="chart-card full">
-      <div class="chart-title">Daily Units per Platform</div>
-      <div class="chart-sub">Click a platform card to highlight</div>
-      <div class="chart-wrap tall"><canvas id="cPlatTrend"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Platform Share of Total</div>
-      <div class="chart-sub"> </div>
-      <div class="chart-wrap"><canvas id="cPlatPie"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Top 10 SKUs</div>
-      <div class="chart-sub" id="platTopLabel">All platforms</div>
-      <div class="chart-wrap"><canvas id="cPlatTopSKU"></canvas></div>
-    </div>
+    <div class="chart-card full"><div class="chart-title">Daily Units per Platform</div><div class="chart-sub">Click a platform card to highlight</div><div class="chart-wrap tall"><canvas id="cPlatTrend"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Platform Share of Total</div><div class="chart-sub"> </div><div class="chart-wrap"><canvas id="cPlatPie"></canvas></div></div>
+    <div class="chart-card"><div class="chart-title">Top 10 SKUs</div><div class="chart-sub" id="platTopLabel">All platforms</div><div class="chart-wrap"><canvas id="cPlatTopSKU"></canvas></div></div>
   </div>
 </div>
 
-<!-- LATEST DRR -->
 <div class="pane" id="pane-latestdrr">
   <div class="sec-head">Latest DRR by Platform</div>
   <div id="latestDRRGrid" class="ldrr-grid"></div>
   <div class="sec-head" style="margin-top:20px">SKU-Level Latest DRR</div>
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
     <span class="fl">Platform</span>
-    <select id="ldrr-plat-filter" onchange="renderLatestDRRTable()">
-      <option value="">All Platforms</option>
-    </select>
+    <select id="ldrr-plat-filter" onchange="renderLatestDRRTable()"><option value="">All Platforms</option></select>
     <span style="font-size:12px;color:var(--text3)" id="ldrr-table-note"></span>
   </div>
-  <div class="t-wrap">
-    <table id="tblLatestDRR">
-      <thead><tr>
-        <th onclick="sortTbl('tblLatestDRR',0)">SKU ↕</th>
-        <th onclick="sortTbl('tblLatestDRR',1)">Product Name ↕</th>
-        <th onclick="sortTbl('tblLatestDRR',2)">Platform ↕</th>
-        <th onclick="sortTbl('tblLatestDRR',3)">Latest Date ↕</th>
-        <th onclick="sortTbl('tblLatestDRR',4)">Latest Units ↕</th>
-        <th onclick="sortTbl('tblLatestDRR',5)">7-Day Avg ↕</th>
-        <th onclick="sortTbl('tblLatestDRR',6)">vs 7-Day Avg</th>
-      </tr></thead>
-      <tbody id="tblLatestDRRBody"></tbody>
-    </table>
-  </div>
+  <div class="t-wrap"><table id="tblLatestDRR">
+    <thead><tr>
+      <th onclick="sortTbl('tblLatestDRR',0)">SKU ↕</th>
+      <th onclick="sortTbl('tblLatestDRR',1)">Product Name ↕</th>
+      <th onclick="sortTbl('tblLatestDRR',2)">Platform ↕</th>
+      <th onclick="sortTbl('tblLatestDRR',3)">Latest Date ↕</th>
+      <th onclick="sortTbl('tblLatestDRR',4)">Latest Units ↕</th>
+      <th onclick="sortTbl('tblLatestDRR',5)">7-Day Avg ↕</th>
+      <th onclick="sortTbl('tblLatestDRR',6)">vs 7-Day Avg</th>
+    </tr></thead>
+    <tbody id="tblLatestDRRBody"></tbody>
+  </table></div>
 </div>
 
-<!-- LOADING SCREEN -->
 <div id="loadingScreen">
   <div class="ld-logo">Conscious Chemist <span>DRR</span></div>
   <div class="ld-bar-bg"><div class="ld-bar" id="upProgFill"></div></div>
@@ -557,7 +340,6 @@ const SUPABASE_KEY   = 'sb_publishable_AUNrLPjCZPdqJAddshDLBQ_rJSHVgBI';
 const SUPABASE_TABLE = 'drr_data';
 </script>
 <script>
-
 (function() {
   if (localStorage.getItem('drr_theme') === 'dark') {
     document.body.classList.add('dark');
@@ -1225,5 +1007,4 @@ function renderLatestDRRTable() {
 
 fetchFromSupabase();
 </script>
-</body>
-</html>
+</body></html>
