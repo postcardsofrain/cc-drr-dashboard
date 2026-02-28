@@ -723,7 +723,7 @@ function resetFilters() {
 function goTab(id, btn) {
   document.querySelectorAll('.pane').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  document.getElementById('pane-'+id).classList.add('on');
+  document.getElementById('pane-'+id).classList.add('active');
   btn.classList.add('active');
   activeTab = id;
   renderTab(id);
@@ -747,6 +747,20 @@ function sum(arr) { return arr.reduce((s,r)=>s+r.u,0); }
 function fmt(n) { return n>=1000000?(n/1000000).toFixed(1)+'M':n>=1000?(n/1000).toFixed(1)+'K':String(n); }
 function skuName(s) { return SKU_MASTER[s] || s; }
 function killChart(id) { if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function getChartDefaults() {
+  const isDark = document.body.classList.contains('dark');
+  const tick = isDark ? '#9490c0' : '#9694b8';
+  const grid = isDark ? '#2e2c4a' : '#e2e1f0';
+  return {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: tick, font: { family: 'Plus Jakarta Sans', size: 10 }, boxWidth: 10, padding: 12 } } },
+    scales: {
+      x: { ticks: { color: tick, font: { family: 'Plus Jakarta Sans', size: 9 }, maxRotation: 45 }, grid: { color: grid } },
+      y: { ticks: { color: tick, font: { family: 'Plus Jakarta Sans', size: 9 } }, grid: { color: grid } }
+    }
+  };
+}
 
 function makeChart(id, type, data, opts={}) {
   killChart(id);
@@ -1139,7 +1153,7 @@ function renderLatestDRR() {
     const delta = s.deltaVs7 !== null ? parseFloat(s.deltaVs7) : null;
     const deltaClass = delta === null ? 'flat' : delta >= 5 ? 'up' : delta <= -5 ? 'dn' : 'flat';
     const deltaLabel = delta === null ? '—' : (delta >= 0 ? '+' : '') + delta + '% vs 7d avg';
-    const freshClass = s.gap <= 1 ? 'staleness-fresh' : s.gap <= 3 ? 'staleness-warn' : 'staleness-stale';
+    const freshClass = s.gap <= 1 ? 'fresh' : s.gap <= 3 ? 'warn' : 'stale';
     const freshDot = s.gap <= 1 ? 'var(--green)' : s.gap <= 3 ? 'var(--amber)' : 'var(--red)';
     const freshLabel = s.gap === 0 ? 'Today' : s.gap === 1 ? '1 day ago' : s.gap + ' days ago';
 
@@ -1149,7 +1163,7 @@ function renderLatestDRR() {
       <div class="ldrr-date">
         <div class="fresh-dot" style="background:${freshDot}"></div>
         <span>${s.latestDate}</span>
-        <span class="${freshClass}" style="margin-left:4px">(${freshLabel})</span>
+        <span class="fresh-dot" style="background:${freshClass==='fresh'?'var(--green)':freshClass==='warn'?'var(--amber)':'var(--red)'}" style="margin-left:4px">(${freshLabel})</span>
       </div>
       <div class="ldrr-meta">
         <div class="ldrr-skus">${s.skusReporting} SKUs · ${s.avg7 !== null ? s.avg7.toLocaleString()+' 7d avg' : 'no avg'}</div>
